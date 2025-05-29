@@ -133,6 +133,22 @@
 
       const usn = document.getElementById("usn").value.trim();
       const accessKey = generateAccessKey(usn);
+      const lookupURL = `https://script.google.com/macros/s/AKfycbxmviGM2xuVvohPFU8emRONRcWSzhwdCCZYI72T5Hj_mISEJnP4ofkBq3WJT4IU3QoJ/exec?formType=lookup&usn=${encodeURIComponent(usn)}`;
+
+      try {
+        const lookupRes = await fetch(lookupURL);
+        const lookupData = await lookupRes.json();
+        if (lookupData.success) {
+          message.textContent = "Student already registered. Please do not register again.";
+          message.className = "message error";
+          return;
+        }
+      } catch (error) {
+        console.error("Lookup failed", error);
+        message.textContent = "Could not verify student. Try again.";
+        message.className = "message error";
+        return;
+      }
 
       const data = {
         formType: "registration",
@@ -161,9 +177,7 @@
       try {
         const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: body
         });
 
