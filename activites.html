@@ -38,7 +38,7 @@
     }
     .activity-row {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 10px;
       margin-top: 1rem;
       align-items: center;
@@ -76,16 +76,16 @@
     <label for="semester">Semester</label>
     <select id="semester" required>
       <option value="">Select</option>
-      <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-      <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+      <option value="1">1</option><option value="2">2</option>
+      <option value="3">3</option><option value="4">4</option>
+      <option value="5">5</option><option value="6">6</option>
       <option value="7">7</option><option value="8">8</option>
     </select>
 
     <div id="activitiesContainer"></div>
     <button type="button" onclick="addActivityRow()">Add Activity</button>
-    <button type="submit">Submit Activity Records</button>
+    <button type="submit">Submit Activities</button>
     <div id="message" class="message"></div>
-    
   </form>
 </div>
 
@@ -113,11 +113,8 @@
       <input type="date" placeholder="Date" required>
       <input type="text" placeholder="Event Details" required>
       <input type="number" placeholder="Credit Points" required>
-      <input type="file"  accept="image/jpeg,application/pdf" required>
-      <select required>
-        <option value="">Activity Type</option>
-        ${createTypeOptions()}
-      </select>
+      <select required><option value="">Activity Type</option>${createTypeOptions()}</select>
+      <input type="file" accept="image/jpeg,application/pdf" required>
       <span>File</span>
     `;
     container.appendChild(div);
@@ -131,19 +128,11 @@
     const accessKey = document.getElementById("accessKey").value.trim();
     const semester = document.getElementById("semester").value;
 
-    const lookupURL = `https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`;
-
-    try {
-      const lookupRes = await fetch(lookupURL);
-      const lookupData = await lookupRes.json();
-      if (!lookupData.success || lookupData.data[6] !== accessKey) {
-        message.textContent = "Invalid USN or Access Key.";
-        message.className = "message error";
-        return;
-      }
-    } catch (error) {
-      console.error("Lookup failed", error);
-      message.textContent = "Could not verify access. Try again.";
+    // Access verification
+    const verify = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`);
+    const verifyData = await verify.json();
+    if (!verifyData.success || verifyData.data[6] !== accessKey) {
+      message.textContent = "Invalid USN or Access Key.";
       message.className = "message error";
       return;
     }
@@ -151,15 +140,15 @@
     const rows = document.querySelectorAll(".activity-row");
     for (let row of rows) {
       const inputs = row.querySelectorAll("input, select");
-      const file = inputs[3].files[0];
+      const formData = new FormData();
 
+      const file = inputs[4].files[0];
       if (!file || !(file.type === "image/jpeg" || file.type === "application/pdf")) {
-        message.textContent = "Only JPEG or PDF files are allowed.";
+        message.textContent = "Only JPEG or PDF files allowed.";
         message.className = "message error";
         return;
       }
 
-      const formData = new FormData();
       formData.append("formType", "activity");
       formData.append("usn", usn);
       formData.append("accessKey", accessKey);
@@ -167,26 +156,25 @@
       formData.append("date", inputs[0].value);
       formData.append("event_details", inputs[1].value);
       formData.append("credit_points", inputs[2].value);
+      formData.append("activity_type", inputs[3].value);
       formData.append("file", file);
-      formData.append("activity_type", inputs[4].value);
 
       try {
         const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
           method: "POST",
           body: formData
         });
-
         const result = await res.json();
-        if (!result.success) throw new Error(result.error || "Submission failed");
+        if (!result.success) throw new Error(result.error);
       } catch (err) {
-        console.error("Save failed", err);
-        message.textContent = "Error saving activity data.";
+        console.error(err);
+        message.textContent = "Failed to save one or more activity records.";
         message.className = "message error";
         return;
       }
     }
 
-    message.textContent = "All activity records saved successfully.";
+    message.textContent = "All activity records submitted successfully.";
     message.className = "message success";
     form.reset();
     container.innerHTML = "";
