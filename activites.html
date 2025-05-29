@@ -85,6 +85,7 @@
     <button type="button" onclick="addActivityRow()">Add Activity</button>
     <button type="submit">Submit Activity Records</button>
     <div id="message" class="message"></div>
+    
   </form>
 </div>
 
@@ -112,12 +113,11 @@
       <input type="date" placeholder="Date" required>
       <input type="text" placeholder="Event Details" required>
       <input type="number" placeholder="Credit Points" required>
-      <input type="file" accept="image/jpeg,application/pdf" required>
+      <input type="file"  accept="image/jpeg,application/pdf" required>
       <select required>
         <option value="">Activity Type</option>
         ${createTypeOptions()}
       </select>
-      <input type="text" placeholder="Type" required>
       <span>File</span>
     `;
     container.appendChild(div);
@@ -169,7 +169,6 @@
       formData.append("credit_points", inputs[2].value);
       formData.append("file", file);
       formData.append("activity_type", inputs[4].value);
-      formData.append("type", inputs[5].value);
 
       try {
         const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
