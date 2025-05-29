@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mentor Meeting Entry</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 750px;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #0d47a1;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Mentor Meeting Record</h2>
+  <form id="meetingForm">
+    <label for="usn">USN</label>
+    <input type="text" id="usn" required />
+
+    <label for="accessKey">Access Key</label>
+    <input type="text" id="accessKey" required />
+
+    <label for="semester">Semester</label>
+    <select id="semester" required>
+      <option value="">Select</option>
+      <option value="1">1</option><option value="2">2</option>
+      <option value="3">3</option><option value="4">4</option>
+      <option value="5">5</option><option value="6">6</option>
+      <option value="7">7</option><option value="8">8</option>
+    </select>
+
+    <label for="date">Date of Meeting</label>
+    <input type="date" id="date" required />
+
+    <label for="problem">Problems Faced</label>
+    <textarea id="problem" rows="3" required></textarea>
+
+    <label for="solution">Issue Solved</label>
+    <textarea id="solution" rows="3" required></textarea>
+
+    <button type="submit">Submit Meeting Record</button>
+    <div id="message" class="message"></div>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById("meetingForm");
+  const message = document.getElementById("message");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    message.textContent = "";
+
+    const usn = document.getElementById("usn").value.trim();
+    const accessKey = document.getElementById("accessKey").value.trim();
+    const semester = document.getElementById("semester").value;
+    const date = document.getElementById("date").value;
+    const problem = document.getElementById("problem").value.trim();
+    const solution = document.getElementById("solution").value.trim();
+
+    const verify = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`);
+    const verifyData = await verify.json();
+    if (!verifyData.success || verifyData.data[6] !== accessKey) {
+      message.textContent = "Invalid USN or Access Key.";
+      message.className = "message error";
+      return;
+    }
+
+    const body = new URLSearchParams();
+    body.append("formType", "meeting");
+    body.append("usn", usn);
+    body.append("accessKey", accessKey);
+    body.append("semester", semester);
+    body.append("date", date);
+    body.append("problem", problem);
+    body.append("solution", solution);
+
+    try {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
+
+      message.textContent = "Meeting record saved successfully.";
+      message.className = "message success";
+      form.reset();
+    } catch (err) {
+      console.error(err);
+      message.textContent = "Failed to save meeting record.";
+      message.className = "message error";
+    }
+  });
+</script>
+</body>
+</html>
