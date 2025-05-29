@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Record Entry</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 950px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #0d47a1;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .subject-row {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    button {
+      background-color: #1976d2;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .message {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Academic Record Entry</h2>
+  <form id="academicForm">
+    <label for="usn">USN</label>
+    <input type="text" id="usn" required>
+
+    <label for="accessKey">Access Key</label>
+    <input type="text" id="accessKey" required>
+
+    <label for="semester">Semester</label>
+    <select id="semester" required>
+      <option value="">Select</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+    </select>
+
+    <div id="subjectsContainer"></div>
+
+    <div class="buttons">
+      <button type="button" onclick="addSubjectRow()">Add Subject</button>
+      <button type="submit">Submit Academic Record</button>
+    </div>
+    <div id="message" class="message"></div>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById("academicForm");
+  const container = document.getElementById("subjectsContainer");
+  const message = document.getElementById("message");
+
+  function addSubjectRow() {
+    const div = document.createElement("div");
+    div.className = "subject-row";
+    div.innerHTML = `
+      <input type="text" placeholder="Subject Name" required>
+      <input type="text" placeholder="Course Code" required>
+      <input type="number" placeholder="Attendance" required>
+      <input type="number" placeholder="MSE1" required>
+      <input type="number" placeholder="MSE2" required>
+      <input type="number" placeholder="Task" required>
+      <input type="number" placeholder="SEE" required>
+      <select required>
+        <option value="">Grade</option>
+        <option>S</option><option>A+</option><option>A</option><option>B+</option>
+        <option>B</option><option>C+</option><option>C</option><option>D</option>
+        <option>E</option><option>F</option>
+      </select>
+      <input type="number" placeholder="Grade Point" step="0.01" required>
+      <input type="number" placeholder="SGPA" step="0.01" required>
+    `;
+    container.appendChild(div);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const usn = document.getElementById("usn").value.trim();
+    const accessKey = document.getElementById("accessKey").value.trim();
+    const semester = document.getElementById("semester").value;
+
+    const subjects = [];
+    document.querySelectorAll(".subject-row").forEach(row => {
+      const inputs = row.querySelectorAll("input, select");
+      subjects.push({
+        usn,
+        accessKey,
+        semester,
+        course_name: inputs[0].value.trim(),
+        course_code: inputs[1].value.trim(),
+        attendance: inputs[2].value,
+        mse1: inputs[3].value,
+        mse2: inputs[4].value,
+        task: inputs[5].value,
+        see: inputs[6].value,
+        grade_type: inputs[7].value,
+        grade_point: inputs[8].value,
+        sgpa: inputs[9].value
+      });
+    });
+
+    try {
+      for (let subject of subjects) {
+        const res = await fetch("YOUR_APPS_SCRIPT_URL", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ formType: "academic", ...subject })
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || "Unknown error");
+      }
+      message.textContent = "All subjects saved successfully.";
+      message.className = "message success";
+      form.reset();
+      container.innerHTML = "";
+    } catch (err) {
+      console.error("Submission failed", err);
+      message.textContent = "Error saving data: " + err.message;
+      message.className = "message error";
+    }
+  });
+</script>
+</body>
+</html>
