@@ -9,25 +9,44 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  const d = e.parameter;
-  const formType = d.formType;
+  try {
+    const contentType = e.postData.type;
 
-  switch (formType) {
-    case 'registration':
-      return saveStudent(d);
-    case 'academic':
-      return saveAcademic(d);
-    case 'activity':
-      return saveActivity(d);
-    case 'meeting':
-      return saveMeeting(d);
-    case 'lookup':
-      return lookupStudent(d.usn);
-    default:
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Unknown form type" }))
-        .setMimeType(ContentService.MimeType.JSON);
+    if (contentType === "application/x-www-form-urlencoded") {
+      // Standard form data (no files)
+      const d = e.parameter;
+      const formType = d.formType;
+
+      switch (formType) {
+        case 'registration':
+          return saveStudent(d);
+        case 'academic':
+          return saveAcademic(d);
+        case 'meeting':
+          return saveMeeting(d);
+        case 'lookup':
+          return lookupStudent(d.usn);
+        default:
+          return respond({ success: false, error: "Unsupported formType" });
+      }
+
+    } else if (contentType.indexOf("multipart/form-data") !== -1) {
+      // Handle file upload with metadata
+      return saveActivityWithBlob(e);
+    } else {
+      return respond({ success: false, error: "Unsupported content type" });
+    }
+
+  } catch (err) {
+    return respond({ success: false, error: err.message });
   }
 }
+
+function respond(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 
 function validateStudent(usn, accessKey) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('students');
@@ -66,31 +85,48 @@ function saveAcademic(d) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function saveActivity(d) {
-  if (!validateStudent(d.usn, d.accessKey)) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Invalid USN or Access Key" }))
-      .setMimeType(ContentService.MimeType.JSON);
+function saveActivityWithBlob(e) {
+  const usn = e.parameter.usn;
+  const accessKey = e.parameter.accessKey;
+
+  if (!validateStudent(usn, accessKey)) {
+    return respond({ success: false, error: "Invalid USN or Access Key" });
   }
+
+  const semester = e.parameter.semester;
+  const date = e.parameter.date;
+  const activity_type = e.parameter.activity_type;
+  const event_details = e.parameter.event_details;
+  const credit_points = e.parameter.credit_points;
+
+  const folder = DriveApp.getFolderById("MentorData"); // <-- Replace with your real folder ID
+
+  let file;
+  try {
+    const blob = e.postData.contents
+      ? Utilities.newBlob(Utilities.base64DecodeWebSafe(e.postData.contents), e.postData.type)
+      : null;
+
+    if (!blob) return respond({ success: false, error: "No file provided." });
+
+    if (!(blob.getContentType() === "image/jpeg" || blob.getContentType() === "application/pdf")) {
+      return respond({ success: false, error: "Only JPEG or PDF files allowed." });
+    }
+
+    file = folder.createFile(blob);
+    file.setName(`${usn}_${new Date().toISOString()}`);
+  } catch (err) {
+    return respond({ success: false, error: "Upload failed: " + err.message });
+  }
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('activities');
   sheet.appendRow([
-    d.usn, d.semester, d.date, d.activity_type, d.event_details, d.credit_points, d.proof_link
+    usn, semester, date, activity_type, event_details, credit_points, file.getUrl()
   ]);
-  return ContentService.createTextOutput(JSON.stringify({ success: true }))
-    .setMimeType(ContentService.MimeType.JSON);
+
+  return respond({ success: true });
 }
 
-function saveMeeting(d) {
-  if (!validateStudent(d.usn, d.accessKey)) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Invalid USN or Access Key" }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('meetings');
-  sheet.appendRow([
-    d.usn, d.semester, d.date, d.problem, d.solution
-  ]);
-  return ContentService.createTextOutput(JSON.stringify({ success: true }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
 
 function lookupStudent(usn) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('students');

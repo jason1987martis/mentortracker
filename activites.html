@@ -38,7 +38,7 @@
     }
     .activity-row {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 10px;
       margin-top: 1rem;
       align-items: center;
@@ -114,8 +114,7 @@
       <input type="text" placeholder="Event Details" required>
       <input type="number" placeholder="Credit Points" required>
       <select required><option value="">Activity Type</option>${createTypeOptions()}</select>
-      <input type="file" accept="image/jpeg,application/pdf" required>
-      <span>File</span>
+      <input type="text" placeholder="Proof Link (Google Drive)" required>
     `;
     container.appendChild(div);
   }
@@ -128,7 +127,6 @@
     const accessKey = document.getElementById("accessKey").value.trim();
     const semester = document.getElementById("semester").value;
 
-    // Access verification
     const verify = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`);
     const verifyData = await verify.json();
     if (!verifyData.success || verifyData.data[6] !== accessKey) {
@@ -140,29 +138,22 @@
     const rows = document.querySelectorAll(".activity-row");
     for (let row of rows) {
       const inputs = row.querySelectorAll("input, select");
-      const formData = new FormData();
-
-      const file = inputs[4].files[0];
-      if (!file || !(file.type === "image/jpeg" || file.type === "application/pdf")) {
-        message.textContent = "Only JPEG or PDF files allowed.";
-        message.className = "message error";
-        return;
-      }
-
-      formData.append("formType", "activity");
-      formData.append("usn", usn);
-      formData.append("accessKey", accessKey);
-      formData.append("semester", semester);
-      formData.append("date", inputs[0].value);
-      formData.append("event_details", inputs[1].value);
-      formData.append("credit_points", inputs[2].value);
-      formData.append("activity_type", inputs[3].value);
-      formData.append("file", file);
+      const body = new URLSearchParams();
+      body.append("formType", "activity");
+      body.append("usn", usn);
+      body.append("accessKey", accessKey);
+      body.append("semester", semester);
+      body.append("date", inputs[0].value);
+      body.append("event_details", inputs[1].value);
+      body.append("credit_points", inputs[2].value);
+      body.append("activity_type", inputs[3].value);
+      body.append("proof_link", inputs[4].value);
 
       try {
         const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
           method: "POST",
-          body: formData
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body
         });
         const result = await res.json();
         if (!result.success) throw new Error(result.error);
