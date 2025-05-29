@@ -133,7 +133,7 @@
 
       const usn = document.getElementById("usn").value.trim();
       const accessKey = generateAccessKey(usn);
-      const lookupURL = `https://script.google.com/macros/s/AKfycbxmviGM2xuVvohPFU8emRONRcWSzhwdCCZYI72T5Hj_mISEJnP4ofkBq3WJT4IU3QoJ/exec?formType=lookup&usn=${encodeURIComponent(usn)}`;
+      const lookupURL = `https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`;
 
       try {
         const lookupRes = await fetch(lookupURL);
