@@ -1,28 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mentor Tracker - Home</title>
   <style>
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 2rem;
       background: #f0f4f8;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      box-sizing: border-box;
+    }
+    .page-border {
+      border: 8px solid #1976d2;
+      border-radius: 16px;
+      padding: 2rem;
+      background-color: white;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
     .card {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
       max-width: 400px;
       width: 90%;
-      text-align: center;
+      margin: auto;
+    }
+    .card img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 1rem;
     }
     h1 {
       color: #0d47a1;
@@ -37,6 +47,7 @@
       text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
+      transition: background-color 0.3s ease;
     }
     a.button:hover {
       background-color: #1258a1;
@@ -44,13 +55,15 @@
   </style>
 </head>
 <body>
-  <div class="card">
-     <img src="logo.jpg" alt="Mentor Tracker Logo" style="width: 80px; height: auto; margin-bottom: 1rem;">
-    <h1>Mentor Tracker</h1>
-    <a class="button" href="register.html">Student Registration</a>
-    <a class="button" href="academic.html">Academic Entry</a>
-    <a class="button" href="activities.html">Activity Points Entry</a>
-    <a class="button" href="meeting.html">Meeting Record Entry</a>
+  <div class="page-border">
+    <div class="card">
+      <img src="logo.jpg" alt="Mentor Tracker Logo" />
+      <h1>Mentor Tracker</h1>
+      <a class="button" href="register.html">Student Registration</a>
+      <a class="button" href="academic.html">Academic Entry</a>
+      <a class="button" href="activities.html">Activity Points Entry</a>
+      <a class="button" href="meeting.html">Meeting Record Entry</a>
+    </div>
   </div>
 </body>
 </html>
