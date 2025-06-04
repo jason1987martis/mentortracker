@@ -143,16 +143,19 @@
         message.textContent = "Upload failed.";
         message.className = "message error";
       }
+
+            // Just assume success, then redirect
+        message.textContent = "File uploaded successfully. Redirecting...";
+        message.className = "message success";
+        form.reset();
+
+        setTimeout(() => {
+        window.location.href = "index.html";
+        }, 5000);
+
     });
 
-    // Just assume success, then redirect
-message.textContent = "File uploaded successfully. Redirecting...";
-message.className = "message success";
-form.reset();
 
-setTimeout(() => {
-  window.location.href = "index.html";
-}, 5000);
   </script>
 </body>
 </html>
