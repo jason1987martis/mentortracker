@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Proof</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 750px;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #0d47a1;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    input[type="file"] {
+      padding: 0.3rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Upload Proof (PDF / Image)</h2>
+    <form id="uploadForm">
+      <label for="usn">USN</label>
+      <input type="text" id="usn" required />
+
+      <label for="accessKey">Access Key</label>
+      <input type="text" id="accessKey" required />
+
+      <label for="file">Select File</label>
+      <input type="file" id="fileInput" accept=".pdf,image/*" required />
+
+      <button type="submit">Upload File</button>
+      <div id="message" class="message"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      message.textContent = "";
+
+      const usn = document.getElementById("usn").value.trim();
+      const accessKey = document.getElementById("accessKey").value.trim();
+      const file = document.getElementById("fileInput").files[0];
+
+      if (!usn || !accessKey || !file) {
+        message.textContent = "All fields are required.";
+        message.className = "message error";
+        return;
+      }
+
+      try {
+        // 🔐 Verify access key via lookup
+        const verify = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`);
+        const verifyData = await verify.json();
+
+        if (!verifyData.success || verifyData.data[6] !== accessKey) {
+          message.textContent = "Invalid USN or Access Key.";
+          message.className = "message error";
+          return;
+        }
+
+        // 📤 Proceed with upload
+        const reader = new FileReader();
+        reader.onload = async function (event) {
+          const base64 = btoa(event.target.result);
+          const data = {
+            usn: usn,
+            accessKey: accessKey,
+            filename: file.name,
+            mimeType: file.type,
+            base64: base64
+          };
+
+          const res = await fetch("https://script.google.com/macros/s/YOUR_UPLOAD_DEPLOYMENT_ID/exec", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+
+          const result = await res.json();
+          if (result.status === "success") {
+            message.textContent = "File uploaded successfully.";
+            message.className = "message success";
+            form.reset();
+          } else {
+            throw new Error(result.message);
+          }
+        };
+
+        reader.readAsBinaryString(file);
+      } catch (err) {
+        console.error(err);
+        message.textContent = "Upload failed.";
+        message.className = "message error";
+      }
+    });
+  </script>
+</body>
+</html>
