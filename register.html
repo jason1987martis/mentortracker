@@ -186,6 +186,9 @@
           message.textContent = `Registered successfully. Access Key: ${accessKey}`;
           message.className = "message success";
           form.reset();
+            setTimeout(() => {
+    window.location.href = "photoupload.html";  // 🔁 adjust path if in subfolder
+  }, 5000);
         } else {
           throw new Error(result.error || "Unknown error");
         }
