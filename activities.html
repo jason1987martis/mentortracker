@@ -38,7 +38,7 @@
     }
     .activity-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(5, 1fr) 40px;
       gap: 10px;
       margin-top: 1rem;
       align-items: center;
@@ -54,6 +54,13 @@
       font-size: 1rem;
       cursor: pointer;
     }
+    .delete-btn {
+      background: none;
+      border: none;
+      color: red;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
     .message {
       margin-top: 1rem;
       font-weight: bold;
@@ -61,6 +68,12 @@
     }
     .success { color: green; }
     .error { color: red; }
+    .disclaimer {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #555;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -84,8 +97,9 @@
 
     <div id="activitiesContainer"></div>
     <button type="button" onclick="addActivityRow()">Add Activity</button>
-    <button type="submit">Submit Activities</button>
+    <button type="submit" id="submitBtn">Submit Activities</button>
     <div id="message" class="message"></div>
+    <div class="disclaimer">Please ensure that the Google Drive link you provide is accessible to <strong>“Anyone with the link”</strong>.</div>
   </form>
 </div>
 
@@ -93,6 +107,7 @@
   const form = document.getElementById("activityForm");
   const container = document.getElementById("activitiesContainer");
   const message = document.getElementById("message");
+  const submitBtn = document.getElementById("submitBtn");
 
   const activityTypes = [
     "NSS/NCC/Red Cross", "Sports Participation", "Tech Symposium", "Cultural Event",
@@ -115,6 +130,7 @@
       <input type="number" placeholder="Credit Points" required>
       <select required><option value="">Activity Type</option>${createTypeOptions()}</select>
       <input type="text" placeholder="Proof Link (Google Drive)" required>
+      <button type="button" class="delete-btn" onclick="this.parentElement.remove()">❌</button>
     `;
     container.appendChild(div);
   }
@@ -122,53 +138,53 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     message.textContent = "";
+    submitBtn.disabled = true;
 
     const usn = document.getElementById("usn").value.trim();
     const accessKey = document.getElementById("accessKey").value.trim();
     const semester = document.getElementById("semester").value;
 
-    const verify = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`);
-    const verifyData = await verify.json();
-    if (!verifyData.success || verifyData.data[6] !== accessKey) {
-      message.textContent = "Invalid USN or Access Key.";
-      message.className = "message error";
-      return;
-    }
+    try {
+      const verify = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`);
+      const verifyData = await verify.json();
+      if (!verifyData.success || verifyData.data[6] !== accessKey) {
+        throw new Error("Invalid USN or Access Key.");
+      }
 
-    const rows = document.querySelectorAll(".activity-row");
-    for (let row of rows) {
-      const inputs = row.querySelectorAll("input, select");
-      const body = new URLSearchParams();
-      body.append("formType", "activity");
-      body.append("usn", usn);
-      body.append("accessKey", accessKey);
-      body.append("semester", semester);
-      body.append("date", inputs[0].value);
-      body.append("event_details", inputs[1].value);
-      body.append("credit_points", inputs[2].value);
-      body.append("activity_type", inputs[3].value);
-      body.append("proof_link", inputs[4].value);
+      const rows = document.querySelectorAll(".activity-row");
+      for (let row of rows) {
+        const inputs = row.querySelectorAll("input, select");
+        const body = new URLSearchParams();
+        body.append("formType", "activity");
+        body.append("usn", usn);
+        body.append("accessKey", accessKey);
+        body.append("semester", semester);
+        body.append("date", inputs[0].value);
+        body.append("event_details", inputs[1].value);
+        body.append("credit_points", inputs[2].value);
+        body.append("activity_type", inputs[3].value);
+        body.append("proof_link", inputs[4].value);
 
-      try {
         const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: body
         });
         const result = await res.json();
-        if (!result.success) throw new Error(result.error);
-      } catch (err) {
-        console.error(err);
-        message.textContent = "Failed to save one or more activity records.";
-        message.className = "message error";
-        return;
+        if (!result.success) throw new Error(result.error || "Submission failed");
       }
-    }
 
-    message.textContent = "All activity records submitted successfully.";
-    message.className = "message success";
-    form.reset();
-    container.innerHTML = "";
+      message.textContent = "All activity records submitted successfully.";
+      message.className = "message success";
+      form.reset();
+      container.innerHTML = "";
+    } catch (err) {
+      console.error(err);
+      message.textContent = err.message || "Submission failed.";
+      message.className = "message error";
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 </script>
 </body>
