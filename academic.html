@@ -58,6 +58,15 @@
       font-weight: bold;
       text-align: center;
     }
+    .subject-row button.delete-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: red;
+  cursor: pointer;
+  padding: 0;
+  align-self: center;
+    }
     .success { color: green; }
     .error { color: red; }
   </style>
@@ -87,7 +96,7 @@
 
     <div id="subjectsContainer"></div>
     <button type="button" onclick="addSubjectRow()">Add Subject</button>
-    <button type="submit">Submit Academic Record</button>
+    <button type="submit" id="submitBtn">Submit Academic Record</button>
     <div id="message" class="message"></div>
   </form>
 </div>
@@ -116,6 +125,7 @@
       </select>
       <input type="number" placeholder="Grade Point" step="0.01" required>
       <input type="number" placeholder="Credits" step="0.01" required>
+      <button type="button" class="delete-btn" onclick="this.parentElement.remove()">❌</button>
     `;
     container.appendChild(div);
   }
@@ -127,7 +137,8 @@
     const usn = document.getElementById("usn").value.trim();
     const accessKey = document.getElementById("accessKey").value.trim();
     const semester = document.getElementById("semester").value;
-
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true; // Disable on click
     const lookupURL = `https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`;
 
     try {
@@ -136,12 +147,14 @@
       if (!lookupData.success || lookupData.data[6] !== accessKey) {
         message.textContent = "Invalid USN or Access Key.";
         message.className = "message error";
+        submitBtn.disabled = false; //reenable
         return;
       }
     } catch (error) {
       console.error("Lookup failed", error);
       message.textContent = "Could not verify access. Try again.";
       message.className = "message error";
+      submitBtn.disabled = false; // Re enable
       return;
     }
 
@@ -179,6 +192,7 @@
         console.error("Save failed", err);
         message.textContent = "Error saving academic data.";
         message.className = "message error";
+         submitBtn.disabled = false; // Re-enable on failure
         return;
       }
     }
@@ -187,6 +201,7 @@
     message.className = "message success";
     form.reset();
     container.innerHTML = "";
+    submitBtn.disabled = false; // Re-enable after success
   });
 </script>
 </body>
