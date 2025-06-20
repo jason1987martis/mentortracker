@@ -118,7 +118,7 @@
       <label for="mother_phone">Mother's Phone</label>
       <input type="tel" id="mother_phone" pattern="[0-9]{10}" required />
 
-      <button type="submit">Register</button>
+      <button type="submit" id="registerBtn">Register</button>
       <div class="message" id="message"></div>
     </form>
   </div>
@@ -130,6 +130,7 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       message.textContent = "";
+       registerBtn.disabled = true; // 🔒 Disable button on click
 
       const usn = document.getElementById("usn").value.trim();
       const accessKey = generateAccessKey(usn);
@@ -141,12 +142,14 @@
         if (lookupData.success) {
           message.textContent = "Student already registered. Please do not register again.";
           message.className = "message error";
+           registerBtn.disabled = false; // 🔓 Re-enable on error
           return;
         }
       } catch (error) {
         console.error("Lookup failed", error);
         message.textContent = "Could not verify student. Try again.";
         message.className = "message error";
+         registerBtn.disabled = false; // 🔓 Re-enable on error
         return;
       }
 
@@ -196,6 +199,7 @@
         console.error("Registration failed", err);
         message.textContent = "Error saving student data.";
         message.className = "message error";
+         registerBtn.disabled = false; // 🔓 Re-enable on error
       }
     });
 
