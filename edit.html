@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mentee Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 2rem;
+    }
+    .section {
+      background: #fff;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #1565c0;
+      margin-bottom: 1rem;
+    }
+    .form-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .form-field {
+      flex: 1 1 45%;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.6rem;
+      text-align: center;
+    }
+    .edit-toggle {
+      text-align: right;
+      margin-bottom: 0.5rem;
+    }
+    .edit-toggle label {
+      font-weight: 500;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .login-section {
+      max-width: 400px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-section">
+  <h2>Enter Details</h2>
+  <label for="usnInput">USN</label>
+  <input type="text" id="usnInput" placeholder="Enter your USN">
+  <label for="accessKeyInput">Access Key</label>
+  <input type="text" id="accessKeyInput" placeholder="Enter your Access Key">
+  <button onclick="handleLogin()">Load Dashboard</button>
+</div>
+
+<div class="section" id="personalSection" style="display:none;">
+  <div class="edit-toggle">
+    <label><input type="checkbox" onchange="toggleSectionEdit('personalSection')"> Edit Personal Info</label>
+  </div>
+  <h2>Personal Information</h2>
+  <div class="form-group" id="personalForm"></div>
+  <button disabled onclick="alert('Submit personal info update')">Update</button>
+</div>
+
+<div class="section" id="academicSection" style="display:none;">
+  <div class="edit-toggle">
+    <label><input type="checkbox" onchange="toggleSectionEdit('academicSection')"> Edit Academic Info</label>
+  </div>
+  <h2>Academic Details</h2>
+  <table id="academicTable">
+    <thead>
+      <tr><th>Semester</th><th>Course Code</th><th>Course Name</th><th>MSE 1</th><th>MSE 2</th><th>SEE</th><th>Grade</th><th>Credits</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button disabled onclick="alert('Submit academic update')">Update</button>
+</div>
+
+<div class="section" id="activitiesSection" style="display:none;">
+  <div class="edit-toggle">
+    <label><input type="checkbox" onchange="toggleSectionEdit('activitiesSection')"> Edit Activity Info</label>
+  </div>
+  <h2>Activities</h2>
+  <table id="activitiesTable">
+    <thead>
+      <tr><th>Semester</th><th>Date</th><th>Type</th><th>Event</th><th>Credits</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button disabled onclick="alert('Submit activity update')">Update</button>
+</div>
+
+<div class="section" id="meetingsSection" style="display:none;">
+  <div class="edit-toggle">
+    <label><input type="checkbox" onchange="toggleSectionEdit('meetingsSection')"> Edit Meeting Info</label>
+  </div>
+  <h2>Meeting Notes</h2>
+  <table id="meetingsTable">
+    <thead>
+      <tr><th>Semester</th><th>Date</th><th>Problems Faced</th><th>Solutions Given</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button disabled onclick="alert('Submit meeting update')">Update</button>
+</div>
+
+<script>
+function toggleSectionEdit(sectionId) {
+  const section = document.getElementById(sectionId);
+  const inputs = section.querySelectorAll('input, textarea');
+  const button = section.querySelector('button');
+  const isEnabled = section.querySelector('input[type=checkbox]').checked;
+  inputs.forEach(input => {
+    if (input.type !== "checkbox") input.disabled = !isEnabled;
+  });
+  if (button) button.disabled = !isEnabled;
+}
+
+function handleLogin() {
+  const usn = document.getElementById("usnInput").value.trim();
+  const accessKey = document.getElementById("accessKeyInput").value.trim();
+  if (!usn || !accessKey) {
+    alert("Please enter both USN and Access Key");
+    return;
+  }
+  loadDashboard(usn, accessKey);
+}
+
+async function loadDashboard(usn, accessKey) {
+  try {
+    const response = await fetch(`https://script.google.com/macros/s/YOUR_DEPLOYED_URL/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`);
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error);
+
+    document.querySelectorAll('.section').forEach(sec => sec.style.display = 'block');
+    document.querySelector('.login-section').style.display = 'none';
+
+    // Populate personal info
+    const personalForm = document.getElementById("personalForm");
+    personalForm.innerHTML = "";
+    for (const [key, value] of Object.entries(data.personal)) {
+      const field = document.createElement("div");
+      field.className = "form-field";
+      field.innerHTML = `<label>${key}</label>${key === 'Permanent Address' ? `<textarea rows='2' disabled>${value}</textarea>` : `<input type='text' value='${value}' disabled>`}`;
+      personalForm.appendChild(field);
+    }
+
+    // Academic
+    const academicBody = document.querySelector("#academicTable tbody");
+    academicBody.innerHTML = "";
+    for (let sem = 1; sem <= 8; sem++) {
+      const entries = data.academic[sem] || [];
+      for (const record of entries) {
+        const row = `<tr><td>${sem}</td><td><input value="${record['Course Code'] || ''}" disabled></td>
+          <td><input value="${record['Course Name'] || ''}" disabled></td>
+          <td><input value="${record['MSE 1 Marks'] || ''}" disabled></td>
+          <td><input value="${record['MSE 2 Marks'] || ''}" disabled></td>
+          <td><input value="${record['SEE Marks'] || ''}" disabled></td>
+          <td><input value="${record['Grade Type'] || ''}" disabled></td>
+          <td><input value="${record['Credits'] || ''}" disabled></td></tr>`;
+        academicBody.innerHTML += row;
+      }
+    }
+
+    // Activities
+    const activitiesBody = document.querySelector("#activitiesTable tbody");
+    activitiesBody.innerHTML = "";
+    for (let sem = 1; sem <= 8; sem++) {
+      const entries = data.activities[sem] || [];
+      for (const record of entries) {
+        const row = `<tr><td>${sem}</td><td><input type='date' value="${record['Date of Participation'] || ''}" disabled></td>
+          <td><input value="${record['Type of Activity'] || ''}" disabled></td>
+          <td><input value="${record['Event Details'] || ''}" disabled></td>
+          <td><input value="${record['Credit Points'] || ''}" disabled></td></tr>`;
+        activitiesBody.innerHTML += row;
+      }
+    }
+
+    // Meetings
+    const meetingsBody = document.querySelector("#meetingsTable tbody");
+    meetingsBody.innerHTML = "";
+    for (let sem = 1; sem <= 8; sem++) {
+      const entries = data.meetings[sem] || [];
+      for (const record of entries) {
+        const row = `<tr><td>${sem}</td><td><input type='date' value="${record['Date'] || ''}" disabled></td>
+          <td><input value="${record['Problems Faced'] || ''}" disabled></td>
+          <td><input value="${record['Solutions Given'] || ''}" disabled></td></tr>`;
+        meetingsBody.innerHTML += row;
+      }
+    }
+  } catch (err) {
+    alert("Error loading dashboard: " + err.message);
+  }
+}
+</script>
+
+</body>
+</html>
