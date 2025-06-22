@@ -133,7 +133,7 @@
   <h2>Meeting Notes</h2>
   <table id="meetingsTable">
     <thead>
-      <tr><th>Semester</th><th>Date</th><th>Problems Faced</th><th>Solutions Given</th></tr>
+      <tr><th>Semester</th><th>Date</th><th>Problems Faced</th><th>Solutions</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -163,12 +163,11 @@ function handleLogin() {
 }
 
 async function loadDashboard(usn, accessKey) {
-   try {
+      try {
     const response = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`,{
   method: "GET",
   mode: "cors"
     });
-
     const data = await response.json();
     if (!data.success) throw new Error(data.error);
 
@@ -177,7 +176,8 @@ async function loadDashboard(usn, accessKey) {
 
     const personalForm = document.getElementById("personalForm");
     personalForm.innerHTML = "";
-    for (const [key, value] of Object.entries(data.personal)) {
+    const fullPersonal = Object.assign({}, { USN: usn }, data.personal);
+    for (const [key, value] of Object.entries(fullPersonal)) {
       const field = document.createElement("div");
       field.className = "form-field";
       const isUSN = key === "USN";
@@ -227,9 +227,9 @@ async function loadDashboard(usn, accessKey) {
       const entries = data.meetings[sem] || [];
       for (const record of entries) {
         const row = `<tr><td>${sem}</td>
-          <td><input type='date' value="${record['Date'] ? new Date(record['Date']).toISOString().split("T")[0] : ''}" disabled></td>
+          <td><input type='date' value="${record['Date of Meeting'] ? new Date(record['Date of Meeting']).toISOString().split("T")[0] : ''}" disabled></td>
           <td><input value="${record['Problems Faced'] || ''}" disabled></td>
-          <td><input value="${record['Solutions Given'] || ''}" disabled></td></tr>`;
+          <td><input value="${record['Issue Solved'] || ''}" disabled></td></tr>`;
         meetingsBody.innerHTML += row;
       }
     }
@@ -243,7 +243,4 @@ async function loadDashboard(usn, accessKey) {
 </html>
 
 
-
-
-
-   
+    });
