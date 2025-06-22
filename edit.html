@@ -164,7 +164,7 @@ function handleLogin() {
 
 async function loadDashboard(usn, accessKey) {
   try {
-    const response = await fetch(`https://script.google.com/macros/s/YOUR_DEPLOYED_URL/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`);
+    const response = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`);
     const data = await response.json();
     if (!data.success) throw new Error(data.error);
 
