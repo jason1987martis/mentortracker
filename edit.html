@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -119,7 +120,7 @@
   <h2>Activities</h2>
   <table id="activitiesTable">
     <thead>
-      <tr><th>Semester</th><th>Date</th><th>Type</th><th>Event</th><th>Credits</th></tr>
+      <tr><th>Semester</th><th>Date</th><th>Type</th><th>Event</th><th>Credits</th><th>Proof</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -147,7 +148,7 @@ function toggleSectionEdit(sectionId) {
   const button = section.querySelector('button');
   const isEnabled = section.querySelector('input[type=checkbox]').checked;
   inputs.forEach(input => {
-    if (input.type !== "checkbox") input.disabled = !isEnabled;
+    if (input.type !== "checkbox" && input.dataset.locked !== "true") input.disabled = !isEnabled;
   });
   if (button) button.disabled = !isEnabled;
 }
@@ -167,30 +168,34 @@ async function loadDashboard(usn, accessKey) {
     const response = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`,{
   method: "GET",
   mode: "cors"
-});
+    });
     const data = await response.json();
     if (!data.success) throw new Error(data.error);
 
     document.querySelectorAll('.section').forEach(sec => sec.style.display = 'block');
     document.querySelector('.login-section').style.display = 'none';
 
-    // Populate personal info
     const personalForm = document.getElementById("personalForm");
     personalForm.innerHTML = "";
     for (const [key, value] of Object.entries(data.personal)) {
       const field = document.createElement("div");
       field.className = "form-field";
-      field.innerHTML = `<label>${key}</label>${key === 'Permanent Address' ? `<textarea rows='2' disabled>${value}</textarea>` : `<input type='text' value='${value}' disabled>`}`;
+      const isUSN = key === "USN";
+      const isDate = key === "DoB";
+      const isAddress = key.toLowerCase().includes("address");
+      const inputType = isDate ? 'date' : 'text';
+      const formattedValue = isDate ? new Date(value).toISOString().split("T")[0] : value;
+      field.innerHTML = `<label>${key}</label>${isAddress ? `<textarea rows='2' ${isUSN ? 'disabled data-locked="true"' : 'disabled'}>${formattedValue}</textarea>` : `<input type='${inputType}' value='${formattedValue}' ${isUSN ? 'disabled data-locked="true"' : 'disabled'}>`}`;
       personalForm.appendChild(field);
     }
 
-    // Academic
     const academicBody = document.querySelector("#academicTable tbody");
     academicBody.innerHTML = "";
     for (let sem = 1; sem <= 8; sem++) {
       const entries = data.academic[sem] || [];
       for (const record of entries) {
-        const row = `<tr><td>${sem}</td><td><input value="${record['Course Code'] || ''}" disabled></td>
+        const row = `<tr><td>${sem}</td>
+          <td><input value="${record['Course Code'] || ''}" disabled data-locked="true"></td>
           <td><input value="${record['Course Name'] || ''}" disabled></td>
           <td><input value="${record['MSE 1 Marks'] || ''}" disabled></td>
           <td><input value="${record['MSE 2 Marks'] || ''}" disabled></td>
@@ -201,27 +206,28 @@ async function loadDashboard(usn, accessKey) {
       }
     }
 
-    // Activities
     const activitiesBody = document.querySelector("#activitiesTable tbody");
     activitiesBody.innerHTML = "";
     for (let sem = 1; sem <= 8; sem++) {
       const entries = data.activities[sem] || [];
       for (const record of entries) {
-        const row = `<tr><td>${sem}</td><td><input type='date' value="${record['Date of Participation'] || ''}" disabled></td>
+        const row = `<tr><td>${sem}</td>
+          <td><input type='date' value="${record['Date of Participation'] ? new Date(record['Date of Participation']).toISOString().split("T")[0] : ''}" disabled></td>
           <td><input value="${record['Type of Activity'] || ''}" disabled></td>
           <td><input value="${record['Event Details'] || ''}" disabled></td>
-          <td><input value="${record['Credit Points'] || ''}" disabled></td></tr>`;
+          <td><input value="${record['Credit Points'] || ''}" disabled></td>
+          <td><input value="${record['Proof (Google Drive Link)'] || ''}" disabled></td></tr>`;
         activitiesBody.innerHTML += row;
       }
     }
 
-    // Meetings
     const meetingsBody = document.querySelector("#meetingsTable tbody");
     meetingsBody.innerHTML = "";
     for (let sem = 1; sem <= 8; sem++) {
       const entries = data.meetings[sem] || [];
       for (const record of entries) {
-        const row = `<tr><td>${sem}</td><td><input type='date' value="${record['Date'] || ''}" disabled></td>
+        const row = `<tr><td>${sem}</td>
+          <td><input type='date' value="${record['Date'] ? new Date(record['Date']).toISOString().split("T")[0] : ''}" disabled></td>
           <td><input value="${record['Problems Faced'] || ''}" disabled></td>
           <td><input value="${record['Solutions Given'] || ''}" disabled></td></tr>`;
         meetingsBody.innerHTML += row;
@@ -234,4 +240,4 @@ async function loadDashboard(usn, accessKey) {
 </script>
 
 </body>
-</html>
+</html>;
