@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mentee Dashboard</title>
   <style>
     body {
@@ -164,11 +163,12 @@ function handleLogin() {
 }
 
 async function loadDashboard(usn, accessKey) {
-  try {
+   try {
     const response = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`,{
   method: "GET",
   mode: "cors"
     });
+
     const data = await response.json();
     if (!data.success) throw new Error(data.error);
 
@@ -240,4 +240,10 @@ async function loadDashboard(usn, accessKey) {
 </script>
 
 </body>
-</html>;
+</html>
+
+
+
+
+
+   
