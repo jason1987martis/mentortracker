@@ -25,7 +25,7 @@
   <input type="text" id="usn" placeholder="Enter your USN">
   <label for="accessKey">Access Key:</label>
   <input type="text" id="accessKey" placeholder="Enter your Access Key">
-  <button onclick="loadDashboard()">View Dashboard</button>
+  <button onclick="loadDashboard()" id="dashviewer">View Dashboard</button>
   <div id="errorMsg" class="error"></div>
 
   <div id="dashboard" style="display:none">
@@ -39,9 +39,11 @@
 <script>
 async function loadDashboard() {
   const usn = document.getElementById("usn").value.trim();
+  const button = document.getElementById("dashviewer");
+  button.disabled = true;
   const accessKey = document.getElementById("accessKey").value.trim();
   const errorMsg = document.getElementById("errorMsg");
-  errorMsg.textContent = "";
+  errorMsg.textContent = "Fetching Records. Please Wait!!!";
 
   if (!usn || !accessKey) {
     errorMsg.textContent = "Please enter both USN and Access Key.";
@@ -51,7 +53,7 @@ async function loadDashboard() {
   try {
     const res = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`);
     const data = await res.json();
-
+    
     if (!data.success) {
       errorMsg.textContent = data.error || "Access denied or data not found.";
       return;
@@ -66,6 +68,8 @@ async function loadDashboard() {
     console.error(err);
     errorMsg.textContent = "Something went wrong. Please try again later.";
   }
+  errorMsg.textContent = "Records fetched successfully!";
+  button.disabled = false;
 }
 
 function renderPersonalInfo(info) {
