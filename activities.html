@@ -133,7 +133,8 @@
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    message.textContent = "";
+    message.textContent = "Uploading Enties. Please Wait!!!";
+        message.className = "message error";
 
     if (!confirm("Are you sure you want to submit the activity records?")) return;
 
@@ -187,7 +188,7 @@
     }
 
     message.textContent = "All activity records submitted successfully. Please submit the Hardcopy of the Activities to your Mentor.";
-    message.className = "message success";
+    message.className = "message error";
     form.reset();
     container.innerHTML = "";
   });

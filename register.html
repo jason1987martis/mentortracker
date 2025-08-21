@@ -129,7 +129,8 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      message.textContent = "";
+      message.textContent = "Trying to register Student. Please Wait...";
+        message.className = "message error";
        registerBtn.disabled = true; // 🔒 Disable button on click
 
       const usn = document.getElementById("usn").value.trim();
@@ -187,7 +188,7 @@
         const result = await res.json();
         if (result.success) {
           message.textContent = `Registered successfully. Access Key: ${accessKey}`;
-          message.className = "message success";
+          message.className = "message error";
           form.reset();
             setTimeout(() => {
     window.location.href = "photoupload.html";  // 🔁 adjust path if in subfolder

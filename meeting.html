@@ -96,7 +96,8 @@
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    message.textContent = "";
+    message.textContent = "Uploading Entries. Please Wait!!!";
+        message.className = "message error";
 
     const usn = document.getElementById("usn").value.trim();
     const accessKey = document.getElementById("accessKey").value.trim();
