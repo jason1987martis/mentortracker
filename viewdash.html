@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Student Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 2rem; }
+    .container { max-width: 1000px; margin: auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2 { color: #0d47a1; margin-top: 2rem; }
+    label { font-weight: bold; display: block; margin-top: 1rem; }
+    input[type="text"] { width: 100%; padding: 0.5rem; margin-top: 0.5rem; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; background: #1976d2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+    th { background-color: #e3f2fd; }
+    .section { margin-top: 2rem; }
+    .error { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Student Dashboard</h1>
+  <label for="usn">USN:</label>
+  <input type="text" id="usn" placeholder="Enter your USN">
+  <label for="accessKey">Access Key:</label>
+  <input type="text" id="accessKey" placeholder="Enter your Access Key">
+  <button onclick="loadDashboard()">View Dashboard</button>
+  <div id="errorMsg" class="error"></div>
+
+  <div id="dashboard" style="display:none">
+    <div id="personalInfo" class="section"></div>
+    <div id="academicInfo" class="section"></div>
+    <div id="activitiesInfo" class="section"></div>
+    <div id="meetingsInfo" class="section"></div>
+  </div>
+</div>
+
+<script>
+async function loadDashboard() {
+  const usn = document.getElementById("usn").value.trim();
+  const accessKey = document.getElementById("accessKey").value.trim();
+  const errorMsg = document.getElementById("errorMsg");
+  errorMsg.textContent = "";
+
+  if (!usn || !accessKey) {
+    errorMsg.textContent = "Please enter both USN and Access Key.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`);
+    const data = await res.json();
+
+    if (!data.success) {
+      errorMsg.textContent = data.error || "Access denied or data not found.";
+      return;
+    }
+
+    document.getElementById("dashboard").style.display = "block";
+    renderPersonalInfo(data.personal);
+    renderAcademicInfo(data.academic);
+    renderActivities(data.activities);
+    renderMeetings(data.meetings);
+  } catch (err) {
+    console.error(err);
+    errorMsg.textContent = "Something went wrong. Please try again later.";
+  }
+}
+
+function renderPersonalInfo(info) {
+  const container = document.getElementById("personalInfo");
+  container.innerHTML = `<h2>Personal Information</h2>`;
+  const table = document.createElement("table");
+  table.innerHTML = `<tr><th>Field</th><th>Value</th></tr>`;
+  for (const key in info) {
+    const row = `<tr><td>${key}</td><td>${info[key]}</td></tr>`;
+    table.innerHTML += row;
+  }
+  container.appendChild(table);
+}
+
+function renderAcademicInfo(academic) {
+  const container = document.getElementById("academicInfo");
+  container.innerHTML = `<h2>Academic Records</h2>`;
+  for (const sem in academic) {
+    const section = document.createElement("div");
+    section.innerHTML = `<h3>Semester ${sem}</h3>`;
+    const table = document.createElement("table");
+    const records = academic[sem];
+    if (records.length > 0) {
+      const headers = Object.keys(records[0]);
+      table.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+      records.forEach(r => {
+        const row = `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`;
+        table.innerHTML += row;
+      });
+    }
+    section.appendChild(table);
+    container.appendChild(section);
+  }
+}
+
+function renderActivities(activities) {
+  const container = document.getElementById("activitiesInfo");
+  container.innerHTML = `<h2>Activities</h2>`;
+  for (const sem in activities) {
+    const section = document.createElement("div");
+    section.innerHTML = `<h3>Semester ${sem}</h3>`;
+    const table = document.createElement("table");
+    const records = activities[sem];
+    if (records.length > 0) {
+      const headers = Object.keys(records[0]);
+      table.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+      records.forEach(r => {
+        const row = `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`;
+        table.innerHTML += row;
+      });
+    }
+    section.appendChild(table);
+    container.appendChild(section);
+  }
+}
+
+function renderMeetings(meetings) {
+  const container = document.getElementById("meetingsInfo");
+  container.innerHTML = `<h2>Mentor Meetings</h2>`;
+  for (const sem in meetings) {
+    const section = document.createElement("div");
+    section.innerHTML = `<h3>Semester ${sem}</h3>`;
+    const table = document.createElement("table");
+    const records = meetings[sem];
+    if (records.length > 0) {
+      const headers = Object.keys(records[0]);
+      table.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+      records.forEach(r => {
+        const row = `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`;
+        table.innerHTML += row;
+      });
+    }
+    section.appendChild(table);
+    container.appendChild(section);
+  }
+}
+</script>
+</body>
+</html>
