@@ -76,7 +76,7 @@
 </head>
 <body>
 <div class="container">
-  <h2>Activity Record Entry</h2>
+  <h2>Activity Record Entry (Rotate Screen if things are hidden)</h2>
   <form id="activityForm">
     <label for="usn">USN</label>
     <input type="text" id="usn" required />
@@ -123,7 +123,7 @@
     div.innerHTML = `
       <input type="date" placeholder="Date" required>
       <input type="text" placeholder="Event Details" required>
-      <input type="number" placeholder="Credit Points" required>
+      <input type="number" placeholder="Activity Points (Consult Mentor)" required>
       <select required><option value="">Activity Type</option>${createTypeOptions()}</select>
       <input type="text" placeholder="Proof Link (Google Drive URL)" required>
       <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
