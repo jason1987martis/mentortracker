@@ -200,6 +200,25 @@
 
         const result = await res.json();
         if (result.success) {
+                // 1. Auto-download as text file
+                  const content = `Student USN: ${usn}\nAccess Key: ${accessKey}\n\nPlease keep this key safe for login.`;
+                  const blob = new Blob([content], { type: "text/plain" });
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(blob);
+                  link.download = `AccessKey_${usn}.txt`;
+                  link.click();
+
+                  // 2. Auto-copy to clipboard
+                  navigator.clipboard.writeText(accessKey)
+                    .then(() => console.log("Access Key copied to clipboard"))
+                    .catch(err => console.error("Clipboard error:", err));
+
+                  // 3. Force popup to remind them
+                  alert(`✅ Registration Successful!\n\nYour Access Key is: ${accessKey}\n\n👉 It has been copied to your clipboard\n👉 A copy has been downloaded to your system\n\nPlease save it safely before continuing.`);
+
+                  // Show message
+
+
           message.textContent = `Registered successfully. Access Key: ${accessKey}`;
           message.className = "message error";
           form.reset();
