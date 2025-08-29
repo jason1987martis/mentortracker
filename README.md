@@ -25,7 +25,4 @@ The system stores student details securely in Google Sheets using **Google Apps 
 - **Database**: Google Sheets
 - **Deployment**: GitHub Pages / Any static hosting
 
----
-
-## 🚀 Getting Started
 
