@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Guide — Using the Portal</title>
+  <meta name="description" content="Step-by-step guide for students to use the portal: login, dashboard, activities, uploads, and FAQs." />
+  <style>
+    :root{
+      --bg:#0b1020;--panel:#0f1630;--ink:#eaf0ff;--muted:#a9b3cc;--brand:#6aa8ff;--accent:#8be8b4;--warn:#ffd166;--danger:#ff6b6b;--line:#1b2342;
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    @media (prefers-color-scheme: light){
+      :root{--bg:#f7f9ff;--panel:#ffffff;--ink:#0b1020;--muted:#4a5773;--brand:#2f6df6;--accent:#10b981;--warn:#b08900;--danger:#d11a2a;--line:#e7ecff;--shadow:0 10px 24px rgba(2,6,23,.08)}
+    }
+    html,body{margin:0;height:100%;}
+    body{font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans, "Apple Color Emoji","Segoe UI Emoji"; background:var(--bg); color:var(--ink);}    
+    .wrap{max-width:1100px;margin:0 auto;padding:28px;}
+    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 70%,transparent);backdrop-filter:saturate(1.2) blur(6px);z-index:10;}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--accent));display:grid;place-items:center;box-shadow:var(--shadow)}
+    .logo svg{fill:white}
+    .title{font-weight:800;letter-spacing:.3px}
+    nav{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px}
+    nav a{padding:10px 14px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--ink);background:var(--panel);}    
+    nav a:hover{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in oklab, var(--brand) 30%, transparent);}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow);}
+    .grid{display:grid;gap:18px}
+    @media(min-width:900px){.grid.cols-2{grid-template-columns:1.2fr .8fr}}
+    h1{font-size:clamp(22px,3vw,30px);margin:12px 0 6px}
+    h2{font-size:clamp(18px,2.3vw,24px);margin:0 0 10px}
+    h3{font-size:18px;margin:14px 0 6px}
+    .muted{color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 10px;border:1px dashed var(--line);}
+    .ok{color:var(--accent)}
+    .warn{color:var(--warn)}
+    .danger{color:var(--danger)}
+    .steps{counter-reset: step}
+    .step{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;margin:10px 0;padding:12px;border-radius:14px;border:1px solid var(--line);}
+    .step::before{counter-increment: step;content: counter(step);display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:color-mix(in oklab, var(--brand) 25%, transparent);border:1px solid var(--brand);font-weight:700}
+    .kbd{font:600 13px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:color-mix(in oklab, var(--bg) 85%, var(--panel));}
+    details{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--panel)}
+    summary{cursor:pointer;font-weight:700}
+    .callout{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:14px;padding:12px;background:var(--panel)}
+    .tag{display:inline-block;background:color-mix(in oklab, var(--brand) 18%, transparent);border:1px solid var(--brand);border-radius:999px;padding:2px 8px;font-size:12px;margin-right:6px}
+    .list-clean{margin:8px 0 0 0;padding:0;list-style:none}
+    .list-clean li{margin:6px 0}
+    .hr{height:1px;background:var(--line);border:0;margin:16px 0}
+    .table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    .table th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left}
+    .table td,.table th{padding:10px 12px;background:var(--panel)}
+    .row{border:1px solid var(--line);border-radius:12px}
+    .row td:first-child{border-radius:12px 0 0 12px}
+    .row td:last-child{border-radius:0 12px 12px 0}
+    .footer{font-size:13px;color:var(--muted);text-align:center;margin:24px 0}
+    .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:12px;border:1px solid var(--line);text-decoration:none;color:var(--ink);background:var(--panel)}
+    .btn:hover{border-color:var(--brand)}
+    .code{white-space:pre-wrap;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;background:color-mix(in oklab, var(--bg) 90%, var(--panel));border:1px solid var(--line);border-radius:12px;padding:10px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" role="img"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+        </div>
+        <div>
+          <div class="title">Student Guide</div>
+          <div class="muted">How to use the portal effectively</div>
+        </div>
+      </div>
+      <nav aria-label="Sections">
+        <a href="#intro">Overview</a>
+        <a href="#requirements">Requirements</a>
+        <a href="#login">Login</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#activities">Activities</a>
+        <a href="#files">File Uploads</a>
+        <a href="#projects">Projects</a>
+        <a href="#faq">FAQ</a>
+        <a href="#support">Support</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap grid cols-2" id="intro">
+    <section class="card">
+      <h1>Welcome! to your Student Portal👋</h1>
+      <p>This page shows you exactly how to use the student portal — from logging in to submitting activities and viewing your progress across all 8 semesters.</p>
+      <div class="pill"><span class="ok">●</span> Lightweight • Mobile-friendly • Print-ready</div>
+      <div class="hr"></div>
+      <h2>Quick Start</h2>
+      <ol class="steps">
+        <li class="step"><div></div><div>Keep your <b>USN</b> and <b>Access Key</b> handy. Obtained one you register in the software.</div></li>
+        <li class="step"><div></div><div>Login → Verify your details → Open <b>Dashboard</b>.</div></li>
+        <li class="step"><div></div><div>Go to <b>Activities</b> → Add entries → Upload proofs for each item. (Only Google Drive Links Allowed.)</div></li>
+        <li class="step"><div></div><div>Review <b>semester-wise</b> progress and download your report if needed.</div></li>
+      </ol>
+    </section>
+
+    <aside class="card" aria-labelledby="notice">
+      <h2 id="notice">Before You Begin</h2>
+      <ul class="list-clean">
+        <li><span class="tag">Tip</span> Use the latest Chrome/Edge/Firefox on a stable connection.</li>
+        <li><span class="tag">Docs</span> Keep your certificates/images in <b>PDF/JPG/PNG</b> (≤ 2&nbsp;MB each unless specified).</li>
+        <li><span class="tag">Privacy</span> Your data is stored securely and used only for academic evaluation.</li>
+      </ul>
+      <div class="hr"></div>
+      <div class="callout">
+        <div>ℹ️</div>
+        <div>All lookups are based on your <b>USN</b>. If something looks incorrect, check your USN formatting (Uppercase only, no spaces).</div>
+      </div>
+    </aside>
+  </main>
+
+  <section class="wrap card" id="requirements">
+    <h2>Requirements</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>What</th>
+          <th>Why</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row">
+          <td>USN</td>
+          <td>Primary key for student records</td>
+          <td>Use official format (e.g., <span class="kbd">NMAMITXXECYYY</span>)</td>
+        </tr>
+        <tr class="row">
+          <td>Access Key</td>
+          <td>Verifies your permission to view the dashboard</td>
+          <td>Provided by the Software and stored in your Device as a txt file when you register.</td>
+        </tr>
+        <tr class="row">
+          <td>Proof Files</td>
+          <td>Evidence for activities</td>
+          <td>PDF/JPG/PNG; clear scans; sensible filenames</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="wrap card" id="login">
+    <h2>Login & Verification</h2>
+    <ol class="steps">
+      <li class="step"><div></div><div>Open the portal and click <b>Login</b></div></li>
+      <li class="step"><div></div><div>Enter your <b>USN</b> and <b>Access Key</b>, then select <b>View Dashboard</b>.</div></li>
+      <li class="step"><div></div><div>If verification fails, recheck USN case (uppercase) and Access Key spelling. Contact mentor if needed.</div></li>
+    </ol>
+    <details>
+      <summary>Troubleshooting login</summary>
+      <ul>
+        <li>Clear cache/cookies or use an incognito window.</li>
+        <li>Disable extensions that block scripts or popups.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="wrap card" id="dashboard">
+    <h2>Understanding the Dashboard</h2>
+    <p>Your dashboard summarizes your academic journey across <b>8 semesters</b>. Missing data appears as <span class="kbd">NULL</span> or empty fields.</p>
+    <ul>
+      <li><b>Profile:</b> Basic details (email, name).</li>
+      <li><b>Semesters 1–8:</b> Academics, activities, meetings, and status.</li>
+      <li><b>Reports:</b> Viewable summary of your entered data.</li>
+    </ul>
+    <details>
+      <summary>What if my data is outdated?</summary>
+      <p>Data is pulled from official records and sheets based on your USN. If updates are missing, raise a correction request with proof by meeting your mentor.</p>
+    </details>
+  </section>
+
+  <section class="wrap card" id="activities">
+    <h2>Adding Activities</h2>
+    <p>Use this section to add co‑curricular, extra‑curricular, internships, competitions, papers, workshops, etc.</p>
+    <ol class="steps">
+      <li class="step"><div></div><div>Go to <b>Activities</b> → click <b>Add New</b>.</div></li>
+      <li class="step"><div></div><div>Fill details: title, category, date, description, and semester mapping.</div></li>
+      <li class="step"><div></div><div>Upload <b>one proof file per entry</b> (certificate, letter, photo, or PDF).</div></li>
+      <li class="step"><div></div><div>Click <b>Save</b>. You can edit or delete entries before final submission.</div></li>
+    </ol>
+    <details>
+      <summary>Categories & examples (List is added on the top)</summary>
+      <div class="grid">
+        <div>
+          <h3>Academic</h3>
+          <ul>
+            <li>Paper presentation, publication</li>
+            <li>Workshops, MOOCs</li>
+            <li>Hackathons (technical)</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Activity</h3>
+          <ul>
+            <li>Sports, cultural events</li>
+            <li>Volunteering, clubs</li>
+            <li>NSS/NCC, leadership</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Internships</h3>
+          <ul>
+            <li>In-plant training, industry internships</li>
+            <li>Company projects with letters</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section class="wrap card" id="files">
+    <h2>File Upload Guidelines</h2>
+    <ul>
+      <li>Allowed: <b>PDF, JPG, PNG</b>. (No ZIPs or links allowed.)</li>
+      <li>Keep under <b>2 MB</b> per file.</li>
+      <li>Use clear scans/exports; avoid blurry photos.</li>
+      <li>Use descriptive filenames: <span class="kbd">USN_Category_Title_Sem.pdf</span></li>
+      <li>One file per activity entry. To add multiple pages, combine into a single PDF.</li>
+    </ul>
+    <details>
+      <summary>How to convert Word/Images to PDF</summary>
+      <ol>
+        <li>Open in Word/Docs → <b>Save as PDF</b>.</li>
+        <li>On mobile, use a scanner app → <b>Export as PDF</b>.</li>
+        <li>Merge multiple pages using your PDF viewer’s <b>Combine</b> feature.</li>
+      </ol>
+    </details>
+  </section>
+
+    <section class="wrap card" id="faq">
+    <h2>Frequently Asked Questions</h2>
+    <details>
+      <summary>My Access Key is not working.</summary>
+      <p>Ensure you typed it exactly as given (uppercase)). If it still fails, it may have expired or been changed—contact your Mentor.</p>
+    </details>
+    <details>
+      <summary>How do I edit or delete an activity?</summary>
+      <p>Open <b>Activities</b>, locate the item, and use <b>Edit</b> or <b>Delete</b>. Deletion is locked after final submission. (Contact Mentor)</p>
+    </details>
+    <details>
+      <summary>What if my document is larger than 2 MB?</summary>
+      <p>Compress the PDF or export images to a lower resolution (150–200 DPI works for certificates).</p>
+    </details>
+    <details>
+      <summary>Can I submit Google Drive links instead of files?</summary>
+      <p>Only if your portal explicitly allows links(Make sure you make the access public). Otherwise, upload the actual file.</p>
+    </details>
+  </section>
+
+  <section class="wrap card" id="support">
+    <h2>Support & Contact</h2>
+    <p>For corrections or issues, contact your Mentor.</p>
+    <div class="callout"><div>🧭</div><div>Keep all communication via your college email for faster verification.</div></div>
+    <p class="muted footer">© <span id="yr"></span> Student Portal • This guide is for students. The college may update policies at any time.</p>
+  </section>
+
+  <script>
+    // year
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    // enable smooth hash scroll on internal links
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click',e=>{const id=a.getAttribute('href').slice(1);const el=document.getElementById(id);if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth',block:'start'});} })
+    });
+    // print shortcut (p)
+    document.addEventListener('keydown',e=>{ if((e.key==='p'||e.key==='P') && !e.metaKey && !e.ctrlKey){ window.print(); }});
+  </script>
+</body>
+</html>
