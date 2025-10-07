@@ -3,52 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Registration</title>
+  <title>Student Registration | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    /* === General Page Style === */
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f4f6f8;
-      padding: 1rem;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      padding: 2rem;
       margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
+
+    /* === Container Card === */
     .container {
       max-width: 700px;
-      margin: auto;
+      width: 100%;
       background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      padding: 2rem 2.5rem;
+      border-radius: 20px;
+      border: 6px solid #1976d2;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.5s ease;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === Logo === */
+    .logo {
+      width: 90px;
+      display: block;
+      margin: 0 auto 1rem auto;
+    }
+
+    /* === Heading === */
     h2 {
       text-align: center;
-      color: #1565c0;
+      color: #0d47a1;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
     }
+
+    /* === Form Labels & Inputs === */
     label {
       display: block;
       margin-top: 1rem;
       font-weight: 600;
+      color: #333;
     }
+
     input, select {
       width: 100%;
-      padding: 0.6rem;
+      padding: 0.7rem;
       margin-top: 0.3rem;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
+
+    input:focus, select:focus {
+      border-color: #1976d2;
+      outline: none;
+      box-shadow: 0 0 6px rgba(25, 118, 210, 0.4);
+    }
+
+    /* === Button === */
     button {
-      margin-top: 1.5rem;
+      margin-top: 1.8rem;
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.9rem;
       background-color: #1976d2;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: 600;
       font-size: 1rem;
       cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 10px rgba(25, 118, 210, 0.2);
     }
+
+    button:hover {
+      background-color: #0d47a1;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(25, 118, 210, 0.3);
+    }
+
+    /* === Loader Spinner === */
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1976d2;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* === Message === */
     .message {
       margin-top: 1rem;
       font-weight: bold;
@@ -56,23 +120,25 @@
     }
     .success { color: green; }
     .error { color: red; }
-    .loader {
-          border: 4px solid #f3f3f3;
-          border-top: 4px solid #1976d2;
-          border-radius: 50%;
-          width: 30px;
-          height: 30px;
-          animation: spin 1s linear infinite;
-          display: inline-block;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
+
+    /* === Responsive Design === */
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+      }
+      input, button {
+        font-size: 0.95rem;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
+    <img src="logo.jpg" alt="Nitte Logo" class="logo" />
     <h2>Student Registration</h2>
     <form id="registerForm">
       <label for="name">Full Name</label>
@@ -139,12 +205,13 @@
   <script>
     const form = document.getElementById("registerForm");
     const message = document.getElementById("message");
+    const registerBtn = document.getElementById("registerBtn");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      message.innerHTML = '<div class="loader"></div><br>Trying to register  Student. Please Wait...';
-        message.className = "message error";
-       registerBtn.disabled = true; // 🔒 Disable button on click
+      message.innerHTML = '<div class="loader"></div><br>Trying to register student. Please wait...';
+      message.className = "message error";
+      registerBtn.disabled = true; // Disable button during submission
 
       const usn = document.getElementById("usn").value.trim();
       const accessKey = generateAccessKey(usn);
@@ -156,14 +223,14 @@
         if (lookupData.success) {
           message.textContent = "Student already registered. Please do not register again.";
           message.className = "message error";
-           registerBtn.disabled = false; // 🔓 Re-enable on error
+          registerBtn.disabled = false;
           return;
         }
       } catch (error) {
         console.error("Lookup failed", error);
         message.textContent = "Could not verify student. Try again.";
         message.className = "message error";
-         registerBtn.disabled = false; // 🔓 Re-enable on error
+        registerBtn.disabled = false;
         return;
       }
 
@@ -200,31 +267,26 @@
 
         const result = await res.json();
         if (result.success) {
-                // 1. Auto-download as text file
-                  const content = `Student USN: ${usn}\nAccess Key: ${accessKey}\n\nPlease keep this key safe for login.`;
-                  const blob = new Blob([content], { type: "text/plain" });
-                  const link = document.createElement("a");
-                  link.href = URL.createObjectURL(blob);
-                  link.download = `AccessKey_${usn}.txt`;
-                  link.click();
+          const content = `Student USN: ${usn}\nAccess Key: ${accessKey}\n\nPlease keep this key safe for login.`;
+          const blob = new Blob([content], { type: "text/plain" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `AccessKey_${usn}.txt`;
+          link.click();
 
-                  // 2. Auto-copy to clipboard
-                  navigator.clipboard.writeText(accessKey)
-                    .then(() => console.log("Access Key copied to clipboard"))
-                    .catch(err => console.error("Clipboard error:", err));
+          navigator.clipboard.writeText(accessKey)
+            .then(() => console.log("Access Key copied"))
+            .catch(err => console.error("Clipboard error:", err));
 
-                  // 3. Force popup to remind them
-                  alert(`✅ Registration Successful!\n\nYour Access Key is: ${accessKey}\n\n👉 It has been copied to your clipboard\n👉 A copy has been downloaded to your system\n\nPlease save it safely before continuing.`);
-
-                  // Show message
-
+          alert(`✅ Registration Successful!\n\nYour Access Key is: ${accessKey}\n\n👉 It has been copied to your clipboard\n👉 A copy has been downloaded to your system\n\nPlease save it safely before continuing.`);
 
           message.textContent = `Registered successfully. Access Key: ${accessKey}`;
-          message.className = "message error";
+          message.className = "message success";
           form.reset();
-            setTimeout(() => {
-    window.location.href = "photoupload.html";  // 🔁 adjust path if in subfolder
-  }, 5000);
+
+          setTimeout(() => {
+            window.location.href = "photoupload.html";
+          }, 5000);
         } else {
           throw new Error(result.error || "Unknown error");
         }
@@ -232,7 +294,7 @@
         console.error("Registration failed", err);
         message.textContent = "Error saving student data.";
         message.className = "message error";
-         registerBtn.disabled = false; // 🔓 Re-enable on error
+        registerBtn.disabled = false;
       }
     });
 

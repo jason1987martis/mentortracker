@@ -3,48 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Academic Record Entry</title>
+  <title>Academic Record Entry | Mentor Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    /* === Global Layout === */
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f4f6f8;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
       margin: 0;
-      padding: 1rem;
-    }
-    .container {
-      max-width: 950px;
-      margin: auto;
-      background: #fff;
       padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
+
+    /* === Main Card === */
+    .container {
+      background: #fff;
+      border: 6px solid #1976d2;
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1000px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeInRow {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === Logo & Heading === */
+    .logo {
+      width: 90px;
+      display: block;
+      margin: 0 auto 1rem auto;
+    }
+
     h2 {
       text-align: center;
       color: #0d47a1;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
     }
+
+    /* === Form Elements === */
     label {
       display: block;
       margin-top: 1rem;
       font-weight: 600;
+      color: #333;
     }
+
     input, select {
       width: 100%;
-      padding: 0.6rem;
+      padding: 0.7rem;
       margin-top: 0.3rem;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 1rem;
+      transition: 0.3s;
     }
-    .subject-row {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 10px;
-      margin-top: 1rem;
+
+    input:focus, select:focus {
+      border-color: #1976d2;
+      box-shadow: 0 0 6px rgba(25,118,210,0.3);
+      outline: none;
     }
+
+/* === Subject Row Layout === */
+.subject-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-top: 1rem;
+  align-items: center;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  animation: fadeInRow 0.4s ease;
+}
+
+.subject-row input, .subject-row select {
+  min-width: 100px;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+
+    /* === Buttons === */
     button {
-      margin-top: 1.5rem;
-      padding: 0.75rem;
       background-color: #1976d2;
       color: white;
       border: none;
@@ -52,23 +106,54 @@
       font-weight: 600;
       font-size: 1rem;
       cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+      padding: 0.75rem 1.2rem;
     }
-    .message {
-      margin-top: 1rem;
-      font-weight: bold;
+
+    button:hover {
+      background-color: #0d47a1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(25,118,210,0.3);
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: red;
+      font-size: 1.4rem;
+      cursor: pointer;
+      justify-self: center;
+      transition: transform 0.2s;
+      margin-left: 4px;
+    }
+
+    .delete-btn:hover {
+      transform: scale(1.2);
+    }
+
+    /* === Action Buttons Layout === */
+    .action-buttons {
       text-align: center;
+      margin-top: 2rem;
     }
-    .subject-row button.delete-btn {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: red;
-  cursor: pointer;
-  padding: 0;
-  align-self: center;
+
+    .add-btn {
+      margin-right: 1rem;
+      background-color: #2196f3;
     }
-    .success { color: green; }
-    .error { color: red; }
+
+    .add-btn:hover {
+      background-color: #0b79d0;
+    }
+
+    .submit-btn {
+      background-color: #1565c0;
+      width: 60%;
+      display: block;
+      margin: 2rem auto 0 auto;
+    }
+
+    /* === Loader === */
     .loader {
       border: 4px solid #f3f3f3;
       border-top: 4px solid #1976d2;
@@ -78,145 +163,174 @@
       animation: spin 1s linear infinite;
       display: inline-block;
     }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* === Messages === */
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success { color: green; }
+    .error { color: red; }
+
+    /* === Responsive Adjustments === */
+    @media (max-width: 900px) {
+      .subject-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .submit-btn {
+        width: 100%;
+      }
+    }
   </style>
 </head>
+
 <body>
-<div class="container">
-  <h2>Academic Record Entry</h2>
-  <form id="academicForm">
-    <label for="usn">USN</label>
-    <input type="text" id="usn" required />
+  <div class="container">
+    <img src="logo.jpg" alt="Nitte Logo" class="logo">
+    <h2>Academic Record Entry</h2>
 
-    <label for="accessKey">Access Key</label>
-    <input type="text" id="accessKey" required />
+    <form id="academicForm">
+      <label for="usn">USN</label>
+      <input type="text" id="usn" required />
 
-    <label for="semester">Semester</label>
-    <select id="semester" required>
-      <option value="">Select</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-      <option value="7">7</option>
-      <option value="8">8</option>
-    </select>
+      <label for="accessKey">Access Key</label>
+      <input type="text" id="accessKey" required />
 
-    <div id="subjectsContainer"></div>
-    <button type="button" onclick="addSubjectRow()">Add Subject</button>
-    <button type="submit" id="submitBtn">Submit Academic Record</button>
-    <div id="message" class="message"></div>
-  </form>
-</div>
-
-<script>
-  const form = document.getElementById("academicForm");
-  const container = document.getElementById("subjectsContainer");
-  const message = document.getElementById("message");
-
-  function addSubjectRow() {
-    const div = document.createElement("div");
-    div.className = "subject-row";
-    div.innerHTML = `
-      <input type="text" placeholder="Subject Name" required>
-      <input type="text" placeholder="Course Code" required>
-      <input type="number" placeholder="Attendance" required>
-      <input type="number" placeholder="MSE1" required>
-      <input type="number" placeholder="MSE2" required>
-      <input type="number" placeholder="Task" required>
-      <input type="number" placeholder="SEE" required>
-      <select required>
-        <option value="">Grade</option>
-        <option>O</option><option>A+</option><option>A</option><option>B+</option>
-        <option>B</option><option>C+</option><option>C</option><option>D</option>
-        <option>E</option><option>F</option>
+      <label for="semester">Semester</label>
+      <select id="semester" required>
+        <option value="">Select</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
       </select>
-      <input type="number" placeholder="Grade Point" step="0.01" required>
-      <input type="number" placeholder="Credits" step="0.01" required>
-      <button type="button" class="delete-btn" onclick="this.parentElement.remove()">❌</button>
-    `;
-    container.appendChild(div);
-  }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    message.innerHTML = '<div class="loader"></div><br>Inserting into Database . Please Wait !!!';
-        message.className = "message error";
+      <div id="subjectsContainer"></div>
 
-    const usn = document.getElementById("usn").value.trim();
-    const accessKey = document.getElementById("accessKey").value.trim();
-    const semester = document.getElementById("semester").value;
-    const submitBtn = document.getElementById("submitBtn");
-    submitBtn.disabled = true; // Disable on click
-    const lookupURL = `https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`;
+      <div class="action-buttons">
+        <button type="button" class="add-btn" onclick="addSubjectRow()">➕ Add Subject</button>
+      </div>
 
-    try {
-      const lookupRes = await fetch(lookupURL);
-      const lookupData = await lookupRes.json();
-      if (!lookupData.success || lookupData.data[6] !== accessKey) {
-        message.textContent = "Invalid USN or Access Key.";
-        message.className = "message error";
-        submitBtn.disabled = false; //reenable
-        return;
-      }
-    } catch (error) {
-      console.error("Lookup failed", error);
-      message.textContent = "Could not verify access. Try again.";
-      message.className = "message error";
-      submitBtn.disabled = false; // Re enable
-      return;
+      <button type="submit" id="submitBtn" class="submit-btn">📘 Submit Academic Record</button>
+
+      <div id="message" class="message"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("academicForm");
+    const container = document.getElementById("subjectsContainer");
+    const message = document.getElementById("message");
+
+    function addSubjectRow() {
+      const div = document.createElement("div");
+      div.className = "subject-row";
+      div.innerHTML = `
+        <input type="text" placeholder="Subject Name" required>
+        <input type="text" placeholder="Course Code" required>
+        <input type="number" placeholder="Attendance" required>
+        <input type="number" placeholder="MSE1" required>
+        <input type="number" placeholder="MSE2" required>
+        <input type="number" placeholder="Task" required>
+        <input type="number" placeholder="SEE" required>
+        <select required>
+          <option value="">Grade</option>
+          <option>O</option><option>A+</option><option>A</option><option>B+</option>
+          <option>B</option><option>C+</option><option>C</option><option>D</option>
+          <option>E</option><option>F</option>
+        </select>
+        <input type="number" placeholder="Grade Point" step="0.01" required>
+        <input type="number" placeholder="Credits" step="0.01" required>
+        <button type="button" class="delete-btn" onclick="this.parentElement.remove()">❌</button>
+      `;
+      container.appendChild(div);
     }
 
-    const rows = document.querySelectorAll(".subject-row");
-    for (let row of rows) {
-      const inputs = row.querySelectorAll("input, select");
-      const data = {
-        formType: "academic",
-        usn: usn,
-        accessKey: accessKey,
-        semester: semester,
-        course_name: inputs[0].value,
-        course_code: inputs[1].value,
-        attendance: inputs[2].value,
-        mse1: inputs[3].value,
-        mse2: inputs[4].value,
-        task: inputs[5].value,
-        see: inputs[6].value,
-        grade_type: inputs[7].value,
-        grade_point: inputs[8].value,
-        sgpa: inputs[9].value
-      };
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      message.innerHTML = '<div class="loader"></div><br>Inserting into Database. Please Wait...';
+      message.className = "message error";
 
-      const body = new URLSearchParams(data).toString();
+      const usn = document.getElementById("usn").value.trim();
+      const accessKey = document.getElementById("accessKey").value.trim();
+      const semester = document.getElementById("semester").value;
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+
+      const lookupURL = `https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`;
 
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: body
-        });
-        const result = await res.json();
-        if (!result.success) throw new Error(result.error || "Submission failed");
-      } catch (err) {
-        console.error("Save failed", err);
-        message.textContent = "Error saving academic data.";
+        const lookupRes = await fetch(lookupURL);
+        const lookupData = await lookupRes.json();
+        if (!lookupData.success || lookupData.data[6] !== accessKey) {
+          message.textContent = "Invalid USN or Access Key.";
+          message.className = "message error";
+          submitBtn.disabled = false;
+          return;
+        }
+      } catch (error) {
+        console.error("Lookup failed", error);
+        message.textContent = "Could not verify access. Try again.";
         message.className = "message error";
-         submitBtn.disabled = false; // Re-enable on failure
+        submitBtn.disabled = false;
         return;
       }
-    }
 
-    message.textContent = "All academic records saved successfully.";
-    message.className = "message success";
-    form.reset();
-    container.innerHTML = "";
-    submitBtn.disabled = false; // Re-enable after success
-  });
-</script>
+      const rows = document.querySelectorAll(".subject-row");
+      for (let row of rows) {
+        const inputs = row.querySelectorAll("input, select");
+        const data = {
+          formType: "academic",
+          usn: usn,
+          accessKey: accessKey,
+          semester: semester,
+          course_name: inputs[0].value,
+          course_code: inputs[1].value,
+          attendance: inputs[2].value,
+          mse1: inputs[3].value,
+          mse2: inputs[4].value,
+          task: inputs[5].value,
+          see: inputs[6].value,
+          grade_type: inputs[7].value,
+          grade_point: inputs[8].value,
+          sgpa: inputs[9].value
+        };
+
+        const body = new URLSearchParams(data).toString();
+
+        try {
+          const res = await fetch("https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: body
+          });
+          const result = await res.json();
+          if (!result.success) throw new Error(result.error || "Submission failed");
+        } catch (err) {
+          console.error("Save failed", err);
+          message.textContent = "Error saving academic data.";
+          message.className = "message error";
+          submitBtn.disabled = false;
+          return;
+        }
+      }
+
+      message.textContent = "All academic records saved successfully.";
+      message.className = "message success";
+      form.reset();
+      container.innerHTML = "";
+      submitBtn.disabled = false;
+    });
+  </script>
 </body>
 </html>
