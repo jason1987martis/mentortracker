@@ -152,7 +152,7 @@ function renderActivities(activities) {
 
 records.forEach(r => {
   const row = `<tr>${headers.map(h => {
-    if (h === 'Proof') {
+    if (h === 'Proof (Google Drive Link)') {
       return `<td><a href="${r[h]}" target="_blank">View Proof</a></td>`;
     } else {
       return `<td>${r[h]}</td>`;
