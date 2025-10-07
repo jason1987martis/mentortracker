@@ -149,8 +149,18 @@ function renderActivities(activities) {
     if (records.length > 0) {
       const headers = Object.keys(records[0]);
       table.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
-      records.forEach(r => {
-        const row = `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`;
+
+records.forEach(r => {
+  const row = `<tr>${headers.map(h => {
+    if (h === 'Proof') {
+      return `<td><a href="${r[h]}" target="_blank">View Proof</a></td>`;
+    } else {
+      return `<td>${r[h]}</td>`;
+    }
+  }).join('')}</tr>`;
+        
+     // records.forEach(r => {
+      //  const row = `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`;
         table.innerHTML += row;
       });
     }
