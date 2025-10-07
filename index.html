@@ -4,73 +4,142 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mentor Tracker - Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* === Global Styles === */
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 2rem;
-      background: #f0f4f8;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
       box-sizing: border-box;
     }
+
+    /* === Card Border + Container === */
     .page-border {
-      border: 8px solid #1976d2;
-      border-radius: 16px;
-      padding: 2rem;
+      border: 6px solid #1976d2;
+      border-radius: 20px;
+      padding: 2.5rem;
       background-color: white;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
     }
+    .page-border:hover {
+      transform: translateY(-3px);
+    }
+
     .card {
       text-align: center;
       max-width: 400px;
       width: 90%;
       margin: auto;
     }
+
+    /* === Logo + Title === */
     .card img {
-      width: 80px;
+      width: 85px;
       height: auto;
       margin-bottom: 1rem;
     }
     h1 {
       color: #0d47a1;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+      font-weight: 700;
     }
+
+    /* === Author Section === */
+    .created-by {
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      color: #555;
+    }
+    .created-by a {
+      color: #1976d2;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .created-by a:hover {
+      text-decoration: underline;
+    }
+
+    /* === Buttons === */
     a.button {
       display: block;
-      padding: 0.75rem;
+      padding: 0.9rem;
       margin: 0.5rem 0;
       background-color: #1976d2;
       color: white;
       text-decoration: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: 600;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 6px rgba(25, 118, 210, 0.2);
     }
     a.button:hover {
-      background-color: #1258a1;
+      background-color: #0d47a1;
+      box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* === Highlight the first button === */
+    a.button.important {
+      background-color: #ff9800;
+      box-shadow: 0 3px 6px rgba(255, 152, 0, 0.3);
+    }
+    a.button.important:hover {
+      background-color: #f57c00;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+    }
+
+    /* === Footer === */
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #777;
+      margin-top: 1rem;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 480px) {
+      .page-border {
+        padding: 1.5rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      a.button {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="page-border">
     <div class="card">
       <img src="logo.jpg" alt="Mentor Tracker Logo" />
       <h1>Mentor Tracker</h1>
-      Created by
-      <a href="http://www.linkedin.com/in/dr-jason-elroy-martis-a4096914b" target="_blank" style="color: #1976d2; text-decoration: none; font-weight: 500;">
-  Dr. Martis
-</a>\
-      <a class="button" href="instructions.html">How to Use this Portal (Please read this First!!!)</a>
-      <a class="button" href="register.html">Student Registration</a>
-      <a class="button" href="academic.html">Academic Entry</a>
-      <a class="button" href="activities.html">Activity Points Entry</a>
-      <a class="button" href="meeting.html">Meeting Record Entry</a>
-      <a class="button" href="viewdash.html">View Dashboard</a>
+      <div class="created-by">
+        Created by
+        <a href="http://www.linkedin.com/in/dr-jason-elroy-martis-a4096914b" target="_blank">
+          Dr. Martis
+        </a>
+      </div>
+
+      <a class="button important" href="instructions.html">📘 How to Use this Portal (Please read this First!)</a>
+      <a class="button" href="register.html">🧍‍♂️ Student Registration</a>
+      <a class="button" href="academic.html">📚 Academic Entry</a>
+      <a class="button" href="activities.html">🎯 Activity Points Entry</a>
+      <a class="button" href="meeting.html">🗓️ Meeting Record Entry</a>
+      <a class="button" href="viewdash.html">📊 View Dashboard</a>
+
+      <footer>© 2025 Mentor Tracker | NMAMIT ECE Mentorship Portal</footer>
     </div>
   </div>
 </body>
 </html>
-
