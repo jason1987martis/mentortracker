@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Dashboard | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ✅ Plotly.js CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -99,7 +102,22 @@
       font-weight: 600;
       text-align: center;
       margin-top: 1rem;
+      min-height: 1.5rem;
     }
+
+    /* Loader used in status message */
+    .loader {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid #bbdefb;
+      border-top-color: #1976d2;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .summary {
       display: flex;
@@ -117,12 +135,52 @@
       font-weight: 600;
     }
 
-    canvas {
-      margin-top: 1rem;
-      background: #fafafa;
-      border-radius: 10px;
-      padding: 1rem;
+    .toggle-btn {
+      background: #1565c0;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
+      margin: 1.5rem auto;
+      transition: 0.3s ease;
+      box-shadow: 0 4px 10px rgba(21, 101, 192, 0.25);
     }
+
+    .toggle-btn:hover {
+      background: #0d47a1;
+      transform: translateY(-2px);
+    }
+
+    .collapsible {
+      display: none;
+      opacity: 0;
+      transition: all 0.6s ease;
+    }
+
+    .collapsible.active {
+      display:block;
+      opacity: 1;
+      transition: all 0.8s ease;
+    }
+
+    .chart-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+      margin: 2rem auto;
+      transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    #summaryContainer { margin-bottom: 2rem; }
 
     table {
       width: 100%;
@@ -152,77 +210,6 @@
       button { width: 100%; }
       .summary { flex-direction: column; gap: 1rem; }
     }
-
-    .toggle-btn {
-  background: #1565c0;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: block;
-  margin: 1.5rem auto;
-  transition: 0.3s ease;
-  box-shadow: 0 4px 10px rgba(21, 101, 192, 0.25);
-}
-.toggle-btn:hover {
-  background: #0d47a1;
-  transform: translateY(-2px);
-}
-/* === Collapsible Fix for Charts === */
-.collapsible {
-  display: none;
-  opacity: 0;
-  transition: all 0.6s ease;
-}
-
-.collapsible.active {
-  display:block;
-  opacity: 1;
-  transition: all 0.8s ease;
-}
-
-/* Ensure canvas charts fit properly */
-canvas {
-  width: 100% !important;
-  height: 320px !important;  /* Taller, fixed height for clarity */
-  display: block;
-  margin: 1rem auto;
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 1rem;
-  box-sizing: border-box;
-}
-
-/* === Dashboard Chart Cards === */
-.chart-card {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
-  margin: 2rem auto;
-  transition: all 0.3s ease;
-}
-
-.chart-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
-}
-
-/* Add breathing room around charts */
-canvas {
-  width: 100% !important;
-  height: 360px !important;
-  display: block;
-  margin: 0 auto;
-}
-
-/* For better separation between charts and summary */
-#summaryContainer {
-  margin-bottom: 2rem;
-}
-
   </style>
 </head>
 <body>
@@ -231,38 +218,39 @@ canvas {
     <h1>Student Dashboard</h1>
 
     <label for="usn">USN:</label>
-    <input type="text" id="usn" placeholder="Enter your USN">
+    <input type="text" id="usn" placeholder="Enter your USN" />
     <label for="accessKey">Access Key:</label>
-    <input type="text" id="accessKey" placeholder="Enter your Access Key">
+    <input type="text" id="accessKey" placeholder="Enter your Access Key" />
     <button onclick="loadDashboard()" id="dashviewer">View Dashboard</button>
     <div id="errorMsg" class="error"></div>
 
-    <!-- Summary + Charts (Collapsible) -->
+    <!-- Summary & Charts -->
     <div id="summaryWrapper" style="display:none;">
       <button id="toggleSummary" class="toggle-btn" onclick="toggleSummarySection()">
         ▼ Show Summary & Charts
       </button>
-      
+
       <div id="summaryContainer" class="collapsible">
         <div class="summary">
-  <div id="totalSems">Total Semesters: 0</div>
-  <div id="avgSGPA">Average SGPA: -</div>
-  <div id="totalActivities">Total Activity Points: 0</div>
-</div>
+          <div id="totalSems">Total Semesters: 0</div>
+          <div id="avgSGPA">Average SGPA: -</div>
+          <div id="totalActivities">Total Activity Points: 0</div>
+        </div>
 
-<div class="chart-card">
-  <h3 style="text-align:center; color:#0d47a1;">📈 SGPA per Semester</h3>
-  <canvas id="sgpaChart"></canvas>
-</div>
+        <div class="chart-card">
+          <h3 style="text-align:center; color:#0d47a1;">📈 SGPA per Semester</h3>
+          <div id="sgpaChart"></div>
+        </div>
 
-<div class="chart-card">
-  <h3 style="text-align:center; color:#0d47a1;">🏅 Activity Points per Semester</h3>
-  <canvas id="activityChart"></canvas>
-</div>
+        <div class="chart-card">
+          <h3 style="text-align:center; color:#0d47a1;">🏅 Activity Points per Semester</h3>
+          <div id="activityChart"></div>
+        </div>
       </div>
     </div>
 
-    <div id="dashboard" style="display:none">
+    <!-- Full Dashboard Sections -->
+    <div id="dashboard" style="display:none;">
       <div id="personalInfo" class="section"></div>
       <div id="academicInfo" class="section"></div>
       <div id="activitiesInfo" class="section"></div>
@@ -274,10 +262,9 @@ canvas {
 async function loadDashboard() {
   const usn = document.getElementById("usn").value.trim();
   const button = document.getElementById("dashviewer");
-  button.disabled = true;
   const accessKey = document.getElementById("accessKey").value.trim();
   const errorMsg = document.getElementById("errorMsg");
-  errorMsg.innerHTML = '<div class="loader"></div><br>Fetching Records. Please Wait...';
+  button.disabled = true;
 
   if (!usn || !accessKey) {
     errorMsg.textContent = "Please enter both USN and Access Key.";
@@ -285,8 +272,10 @@ async function loadDashboard() {
     return;
   }
 
+  errorMsg.innerHTML = '<span class="loader"></span>Fetching Records. Please Wait...';
+
   try {
-    const res = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${usn}&accessKey=${accessKey}`);
+    const res = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=dashboard&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`);
     const data = await res.json();
 
     if (!data.success) {
@@ -297,16 +286,16 @@ async function loadDashboard() {
 
     document.getElementById("dashboard").style.display = "block";
     document.getElementById("summaryWrapper").style.display = "block";
-document.getElementById("summaryContainer").classList.add("active");
-document.getElementById("toggleSummary").textContent = "▲ Hide Summary & Charts";
+    document.getElementById("summaryContainer").classList.add("active");
+    document.getElementById("summaryContainer").style.display = "block";
+    document.getElementById("toggleSummary").textContent = "▲ Hide Summary & Charts";
 
+    renderPersonalInfo(data.personal || {});
+    renderAcademicInfo(data.academic || {});
+    renderActivities(data.activities || {});
+    renderMeetings(data.meetings || {});
+    computeAndDisplaySummary(data.academic || {}, data.activities || {});
 
-    renderPersonalInfo(data.personal);
-    renderAcademicInfo(data.academic);
-    renderActivities(data.activities);
-    renderMeetings(data.meetings);
-
-    computeAndDisplaySummary(data.academic, data.activities);
     errorMsg.textContent = "✅ Records fetched successfully!";
   } catch (err) {
     console.error(err);
@@ -315,38 +304,31 @@ document.getElementById("toggleSummary").textContent = "▲ Hide Summary & Chart
   button.disabled = false;
 }
 
-/* === SUMMARY AND CHARTS === */
-/* === SUMMARY AND CHARTS (Safe & Fixed) === */
+/* === SUMMARY AND PLOTLY CHARTS === */
 function computeAndDisplaySummary(academic, activities) {
-  const sgpaData = {};
-  const activityPoints = {};
-  
-  // Collect all semester keys from either academic or activity
-  const semesters = Array.from(new Set([
-    ...Object.keys(academic || {}),
-    ...Object.keys(activities || {})
-  ])).map(Number).sort((a, b) => a - b);
+  const sgpaData = {}, activityPoints = {};
+  const semesters = Array.from(new Set([...Object.keys(academic || {}), ...Object.keys(activities || {})]))
+    .map(Number)
+    .filter(n => !Number.isNaN(n))
+    .sort((a, b) => a - b);
 
   semesters.forEach(sem => {
     const subjects = academic[sem] || [];
     let totalCredits = 0, weightedSum = 0;
-
     subjects.forEach(s => {
-      const gp = parseFloat(s["Grade Point"] || s["Grade Point "] || 0);
-      const cr = parseFloat(s["Credits"] || s["Credit"] || 0);
+      const gp = parseFloat(s["Grade Point"] ?? s["Grade Point "] ?? 0);
+      const cr = parseFloat(s["Credits"] ?? s["Credit"] ?? 0);
       if (!isNaN(gp) && !isNaN(cr)) {
         weightedSum += gp * cr;
         totalCredits += cr;
       }
     });
+    sgpaData[sem] = totalCredits > 0 ? Number((weightedSum / totalCredits).toFixed(2)) : 0;
 
-    sgpaData[sem] = totalCredits > 0 ? (weightedSum / totalCredits).toFixed(2) : 0;
-
-    // Activities
     const acts = activities[sem] || [];
     let totalAct = 0;
     acts.forEach(a => {
-      const pts = parseFloat(a["Credit Points"] || a["Activity Points (Consult Mentor)"] || 0);
+      const pts = parseFloat(a["Credit Points"] ?? a["Activity Points (Consult Mentor)"] ?? 0);
       if (!isNaN(pts)) totalAct += pts;
     });
     activityPoints[sem] = totalAct;
@@ -354,104 +336,91 @@ function computeAndDisplaySummary(academic, activities) {
 
   const totalSems = semesters.length;
   const avgSGPA = totalSems > 0 
-      ? (Object.values(sgpaData).reduce((a, b) => a + parseFloat(b), 0) / totalSems).toFixed(2)
-      : "-";
-  const totalActivity = Object.values(activityPoints).reduce((a, b) => a + b, 0);
+    ? (Object.values(sgpaData).reduce((a, b) => a + Number(b || 0), 0) / totalSems).toFixed(2)
+    : "-";
+  const totalActivity = Object.values(activityPoints).reduce((a, b) => a + Number(b || 0), 0);
 
   document.getElementById("totalSems").textContent = `Total Semesters: ${totalSems}`;
   document.getElementById("avgSGPA").textContent = `Average SGPA: ${avgSGPA}`;
   document.getElementById("totalActivities").textContent = `Total Activity Points: ${totalActivity}`;
 
-  renderCharts(semesters, sgpaData, activityPoints);
+  renderPlotlyCharts(semesters, sgpaData, activityPoints);
 }
 
-/* === RENDER CHARTS === */
-function renderCharts(semesters, sgpaData, activityPoints) {
-  if (!semesters.length) return;
+/* === PLOTLY CHARTS === */
+function renderPlotlyCharts(semesters, sgpaData, activityPoints) {
+  const sgpaY = semesters.map(s => Number(sgpaData[s] ?? 0));
+  const actY = semesters.map(s => Number(activityPoints[s] ?? 0));
 
-  // Destroy old charts if reloaded
-  if (window.sgpaChartInstance) window.sgpaChartInstance.destroy();
-  if (window.actChartInstance) window.actChartInstance.destroy();
-
-  const sgpaCtx = document.getElementById("sgpaChart").getContext("2d");
-  window.sgpaChartInstance = new Chart(sgpaCtx, {
-    type: 'line',
-    data: {
-      labels: semesters,
-      datasets: [{
-        label: 'SGPA per Semester',
-        data: semesters.map(s => sgpaData[s]),
-        borderColor: '#1565c0',
-        backgroundColor: 'rgba(21,101,192,0.1)',
-        tension: 0.3,
-        fill: true,
-        borderWidth: 3,
-        pointRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true, max: 10, title: { display: true, text: 'SGPA' } },
-        x: { title: { display: true, text: 'Semester' } }
-      },
-      plugins: {
-        legend: { display: true, position: 'bottom' }
-      }
-    }
-  });
-
-  const actCtx = document.getElementById("activityChart").getContext("2d");
-  window.actChartInstance = new Chart(actCtx, {
+  // SGPA Chart
+  const sgpaTrace = {
+    x: semesters,
+    y: sgpaY,
     type: 'bar',
-    data: {
-      labels: semesters,
-      datasets: [
-        {
-          label: 'Activity Points',
-          data: semesters.map(s => activityPoints[s]),
-          backgroundColor: 'rgba(25,118,210,0.6)',
-        },
-        {
-          label: 'Max Points (25)',
-          data: semesters.map(() => 25),
-          backgroundColor: 'rgba(200,200,200,0.4)',
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true, max: 30, title: { display: true, text: 'Activity Points' } },
-        x: { title: { display: true, text: 'Semester' } }
-      },
-      plugins: { legend: { display: true, position: 'bottom' } }
-    }
-  });
+    marker: { color: 'rgba(25,118,210,0.8)' },
+    name: 'SGPA',
+    text: sgpaY.map(v => v.toFixed(2)),
+    textposition: 'auto'
+  };
+  const sgpaLayout = {
+    title: 'SGPA per Semester',
+    margin: { t: 40, b: 50, l: 50, r: 20 },
+    yaxis: { title: 'SGPA', range: [0, 10] },
+    xaxis: { title: 'Semester' },
+    paper_bgcolor: '#fff',
+    plot_bgcolor: '#fff'
+  };
+  Plotly.newPlot('sgpaChart', [sgpaTrace], sgpaLayout, { responsive: true });
+
+  // Activity Chart
+  const actTrace = {
+    x: semesters,
+    y: actY,
+    type: 'bar',
+    marker: { color: 'rgba(46,204,113,0.8)' },
+    name: 'Activity Points',
+    text: actY.map(v => v),
+    textposition: 'auto'
+  };
+  const maxTrace = {
+    x: semesters,
+    y: semesters.map(() => 25),
+    type: 'bar',
+    name: 'Max Points (25)',
+    marker: { color: 'rgba(200,200,200,0.4)' }
+  };
+  const actLayout = {
+    title: 'Activity Points per Semester',
+    margin: { t: 40, b: 50, l: 50, r: 20 },
+    yaxis: { title: 'Activity Points', range: [0, 30] },
+    xaxis: { title: 'Semester' },
+    barmode: 'group',
+    paper_bgcolor: '#fff',
+    plot_bgcolor: '#fff'
+  };
+  Plotly.newPlot('activityChart', [actTrace, maxTrace], actLayout, { responsive: true });
 }
 
-/* === COLLAPSIBLE SUMMARY === */
+/* === COLLAPSIBLE SECTION === */
 function toggleSummarySection() {
   const summaryContainer = document.getElementById("summaryContainer");
   const toggleBtn = document.getElementById("toggleSummary");
-  if (summaryContainer.classList.contains("active")) {
-    summaryContainer.style.display = summaryContainer.style.display === "block" ? "none" : "block";
-    toggleBtn.textContent = "▼ Show Summary & Charts";
-  } else {
-    summaryContainer.style.display = summaryContainer.style.display === "block" ? "none" : "block";
-    toggleBtn.textContent = "▲ Hide Summary & Charts";
-  }
+  const isActive = !summaryContainer.classList.contains("active");
+  summaryContainer.classList.toggle("active", isActive);
+  summaryContainer.style.display = isActive ? "block" : "none";
+  toggleBtn.textContent = isActive ? "▲ Hide Summary & Charts" : "▼ Show Summary & Charts";
 }
 
-
-
-/* === TABLE RENDERING === */
+/* === TABLE RENDERING FUNCTIONS === */
 function renderPersonalInfo(info) {
   const c = document.getElementById("personalInfo");
   c.innerHTML = `<h2>Personal Information</h2>`;
   const t = document.createElement("table");
   t.innerHTML = `<tr><th>Field</th><th>Value</th></tr>`;
-  for (const k in info) t.innerHTML += `<tr><td>${k}</td><td>${info[k]}</td></tr>`;
+  for (const k in info) {
+    const val = info[k] ?? "";
+    t.innerHTML += `<tr><td>${escapeHTML(k)}</td><td>${escapeHTML(String(val))}</td></tr>`;
+  }
   c.appendChild(t);
 }
 
@@ -460,15 +429,18 @@ function renderAcademicInfo(academic) {
   c.innerHTML = `<h2>Academic Records</h2>`;
   for (const sem in academic) {
     const s = document.createElement("div");
-    s.innerHTML = `<h3>Semester ${sem}</h3>`;
+    s.innerHTML = `<h3>Semester ${escapeHTML(sem)}</h3>`;
     const t = document.createElement("table");
-    const r = academic[sem];
+    const r = academic[sem] || [];
     if (r.length > 0) {
       const h = Object.keys(r[0]);
-      t.innerHTML = `<tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>`;
-      r.forEach(d => t.innerHTML += `<tr>${h.map(x=>`<td>${d[x]}</td>`).join('')}</tr>`);
+      t.innerHTML = `<tr>${h.map(x => `<th>${escapeHTML(x)}</th>`).join('')}</tr>`;
+      r.forEach(d => {
+        t.innerHTML += `<tr>${h.map(x => `<td>${escapeHTML(String(d[x] ?? ""))}</td>`).join('')}</tr>`;
+      });
     }
-    s.appendChild(t); c.appendChild(s);
+    s.appendChild(t);
+    c.appendChild(s);
   }
 }
 
@@ -477,19 +449,26 @@ function renderActivities(acts) {
   c.innerHTML = `<h2>Activities</h2>`;
   for (const sem in acts) {
     const s = document.createElement("div");
-    s.innerHTML = `<h3>Semester ${sem}</h3>`;
+    s.innerHTML = `<h3>Semester ${escapeHTML(sem)}</h3>`;
     const t = document.createElement("table");
-    const r = acts[sem];
+    const r = acts[sem] || [];
     if (r.length > 0) {
       const h = Object.keys(r[0]);
-      t.innerHTML = `<tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>`;
+      t.innerHTML = `<tr>${h.map(x => `<th>${escapeHTML(x)}</th>`).join('')}</tr>`;
       r.forEach(d => {
-        t.innerHTML += `<tr>${h.map(x => 
-          x.includes("Proof") ? `<td><a href="${d[x]}" target="_blank">View Proof</a></td>` : `<td>${d[x]}</td>`
-        ).join('')}</tr>`;
+        t.innerHTML += `<tr>${h.map(x => {
+          const val = d[x];
+          if (String(x).toLowerCase().includes("proof")) {
+            const href = typeof val === "string" ? val : "";
+            const safeHref = encodeURI(href);
+            return `<td>${href ? `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">View Proof</a>` : ""}</td>`;
+          }
+          return `<td>${escapeHTML(String(val ?? ""))}</td>`;
+        }).join('')}</tr>`;
       });
     }
-    s.appendChild(t); c.appendChild(s);
+    s.appendChild(t);
+    c.appendChild(s);
   }
 }
 
@@ -498,16 +477,29 @@ function renderMeetings(m) {
   c.innerHTML = `<h2>Mentor Meetings</h2>`;
   for (const sem in m) {
     const s = document.createElement("div");
-    s.innerHTML = `<h3>Semester ${sem}</h3>`;
+    s.innerHTML = `<h3>Semester ${escapeHTML(sem)}</h3>`;
     const t = document.createElement("table");
-    const r = m[sem];
+    const r = m[sem] || [];
     if (r.length > 0) {
       const h = Object.keys(r[0]);
-      t.innerHTML = `<tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>`;
-      r.forEach(d => t.innerHTML += `<tr>${h.map(x=>`<td>${d[x]}</td>`).join('')}</tr>`);
+      t.innerHTML = `<tr>${h.map(x => `<th>${escapeHTML(x)}</th>`).join('')}</tr>`;
+      r.forEach(d => {
+        t.innerHTML += `<tr>${h.map(x => `<td>${escapeHTML(String(d[x] ?? ""))}</td>`).join('')}</tr>`;
+      });
     }
-    s.appendChild(t); c.appendChild(s);
+    s.appendChild(t);
+    c.appendChild(s);
   }
+}
+
+/* === Small HTML escaper for safety === */
+function escapeHTML(str) {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 </script>
 </body>
