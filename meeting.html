@@ -13,10 +13,51 @@
       margin: 0;
       padding: 2rem;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 1.5rem;
+      justify-content: flex-start;
+      align-items: center;
       min-height: 100vh;
       box-sizing: border-box;
+    }
+
+    /* === Top Navigation === */
+    .top-nav {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      background: #2a348d;
+      border-radius: 16px;
+      padding: 0.75rem 1.5rem;
+      border: 4px solid rgba(42, 52, 141, 0.2);
+      box-shadow: 0 6px 18px rgba(42, 52, 141, 0.3);
+    }
+
+    .top-nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .top-nav a:hover,
+    .top-nav a:focus {
+      background-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .top-nav .active {
+      background-color: rgba(255, 255, 255, 0.3);
+      color: #2a348d;
     }
 
     /* === Main Container === */
@@ -26,7 +67,7 @@
       background: #fff;
       padding: 2rem 2.5rem;
       border-radius: 20px;
-      border: 6px solid #1976d2;
+      border: 6px solid #2a348d;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
       animation: fadeIn 0.6s ease;
     }
@@ -83,7 +124,7 @@
     button {
       margin-top: 2rem;
       padding: 0.85rem;
-      background-color: #1565c0;
+      background-color: #2a348d;
       color: white;
       border: none;
       border-radius: 10px;
@@ -103,10 +144,48 @@
       transform: translateY(-2px);
     }
 
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: rgba(42, 52, 141, 0.1);
+      color: #2a348d;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.4rem 0.95rem 0.4rem 0.4rem;
+      border-radius: 999px;
+      border: 1px solid rgba(42, 52, 141, 0.25);
+      box-shadow: 0 4px 12px rgba(42, 52, 141, 0.2);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+      margin-bottom: 1rem;
+      width: fit-content;
+    }
+
+    .back-btn .back-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #2a348d;
+      color: #ffffff;
+      font-size: 1.05rem;
+      line-height: 1;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+    }
+
+    .back-btn:hover,
+    .back-btn:focus {
+      background-color: rgba(42, 52, 141, 0.18);
+      box-shadow: 0 6px 16px rgba(42, 52, 141, 0.25);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
     /* === Loader === */
     .loader {
       border: 4px solid #f3f3f3;
-      border-top: 4px solid #1976d2;
+      border-top: 4px solid #2a348d;
       border-radius: 50%;
       width: 30px;
       height: 30px;
@@ -131,6 +210,17 @@
 
     /* === Responsive === */
     @media (max-width: 600px) {
+      body {
+        padding: 1.5rem 1rem;
+        gap: 1rem;
+      }
+      .top-nav {
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+      }
+      .top-nav a {
+        flex: 1 1 130px;
+      }
       .container {
         padding: 1.5rem;
       }
@@ -141,7 +231,20 @@
   </style>
 </head>
 <body>
+  <nav class="top-nav" aria-label="Main navigation">
+    <a href="index.html">Home</a>
+    <a href="register.html">Register</a>
+    <a href="academic.html">Academic</a>
+    <a href="activities.html">Activities</a>
+    <a href="meeting.html" class="active">Meetings</a>
+    <a href="viewdash.html">Dashboard</a>
+  </nav>
+
   <div class="container">
+    <a href="index.html" class="back-btn" onclick="if (window.history.length > 1) { window.history.back(); return false; }">
+      <span class="back-icon" aria-hidden="true">&#8592;</span>
+      <span>Back</span>
+    </a>
     <img src="logo.jpg" alt="Nitte Logo" class="logo" />
     <h2>Mentor Meeting Record</h2>
 
