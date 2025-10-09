@@ -190,7 +190,7 @@
       width: 16px;
       height: 16px;
       border: 3px solid #bbdefb;
-      border-top-color: #1976d2;
+      border-top-color: #2a348d;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       vertical-align: middle;
@@ -210,12 +210,12 @@
 
     .summary div {
       text-align: center;
-      color: #0d47a1;
+      color: #2a348d;
       font-weight: 600;
     }
 
     .toggle-btn {
-      background: #1565c0;
+      background: #2a348d;
       color: white;
       border: none;
       border-radius: 8px;
@@ -277,7 +277,7 @@
 
     th {
       background-color: #e3f2fd;
-      color: #0d47a1;
+      color: #2a348d;
     }
 
     tr:hover td {
@@ -327,7 +327,12 @@
     <button onclick="loadDashboard()" id="dashviewer">View Dashboard</button>
     <div id="errorMsg" class="error"></div>
 
-    <!-- Summary & Charts -->
+    
+
+    <!-- Full Dashboard Sections -->
+    <div id="dashboard" style="display:none;">
+      <div id="personalInfo" class="section"></div>
+      <!-- Summary & Charts -->
     <div id="summaryWrapper" style="display:none;">
       <button id="toggleSummary" class="toggle-btn" onclick="toggleSummarySection()">
         ▼ Show Summary & Charts
@@ -351,10 +356,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Full Dashboard Sections -->
-    <div id="dashboard" style="display:none;">
-      <div id="personalInfo" class="section"></div>
       <div id="academicInfo" class="section"></div>
       <div id="activitiesInfo" class="section"></div>
       <div id="meetingsInfo" class="section"></div>
