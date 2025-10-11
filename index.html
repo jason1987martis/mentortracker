@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mentor Tracker - Home</title>
+
+  <!-- put this in <head> -->
+  <link rel="manifest" href="manifest.json">
+
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* === Global Styles === */
@@ -141,6 +146,19 @@
       <footer>© 2025 Mentor Tracker | NMAMIT ISE Mentorship Portal</footer>
     </div>
   </div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => console.log('✅ Service Worker registered:', reg))
+      .catch(err => console.log('❌ Service Worker registration failed:', err));
+  });
+}
+</script>
+
+
+
 </body>
 </html>
 
