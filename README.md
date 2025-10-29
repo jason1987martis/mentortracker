@@ -48,13 +48,9 @@ A lightweight mentorship portal for registering students, capturing academic pro
    | Sheet | Columns (left → right) |
    |-------|------------------------|
    | `students` | `Name`, `USN`, `DOB`, `SSLC`, `PUC`, `NUCAT`, `Access Key`, `Student Phone`, `Student Email`, `Stay Type`, `Hobbies`, `Father Name`, `Father Occupation`, `Mother Name`, `Mother Occupation`, `Residential Address`, `Father Phone`, `Mother Phone` |
-
    | `academic` | `USN`, `Semester`, `Course Code`, `Course Name`, `Attendance`, `MSE1`, `MSE2`, `Task`, `SEE`, `Grade Type`, `Grade Point`, `SGPA` |
-
    | `activities` | `USN`, `Semester`, `Date`, `Activity Type`, `Event Details`, `Credit Points`, `Proof Link` |
-
    | `meetings` | `USN`, `Semester`, `Date`, `Problems Faced`, `Issue Solved` |
-
    | `photo` *(optional, only if you use `photouploadscript.gs`)* | `USN`, `Image Formula`, `Shareable Link`, `Viewable Link` |
 
    > Tip: populate one sample row or freeze the header row to keep the structure intact.
