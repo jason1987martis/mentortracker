@@ -1,52 +1,5 @@
-function doGet(e) {
-  const formType = e.parameter.formType;
-  let output;
-  if (formType === 'lookup') {
-    return lookupStudent(e.parameter.usn);
-  } 
-  else if(formType === 'dashboard')
-  {
-    Logger.log("Requested Dashboard");
-    return getFullDashboardData(e.parameter.usn, e.parameter.accessKey);
-  }
-  else {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Unsupported GET request" }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-  
-}
 
-function doPost(e) {
-  try {
-    if (!e.postData) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "No postData received." }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
 
-    const contentType = e.postData.type || "";
-    
-    if (contentType.includes("multipart/form-data")) {
-      return saveActivityWithBlob(e);
-    } else if (contentType === "application/x-www-form-urlencoded") {
-      const d = e.parameter;
-      const formType = d.formType;
-      if (formType === 'registration') return saveStudent(d);
-      if (formType === 'academic') return saveAcademic(d);
-      if (formType === 'meeting') return saveMeeting(d);
-      if (formType === 'lookup') return lookupStudent(d.usn);
-      if (formType === 'activity') return saveActivity(d);
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Unknown formType" }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Unsupported Content-Type" }))
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.message }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
 
 function validateStudent(usn, accessKey) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('students');
