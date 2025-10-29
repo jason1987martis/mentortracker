@@ -78,8 +78,14 @@
       <div id="message" class="message"></div>
     </form>
   </div>
-
+  <script src="config-helper.js"></script>
   <script>
+    const config = window.MENTOR_TRACKER_CONFIG || {};
+    const defaultApiUrl = "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
+    const defaultUploadUrl = "https://script.google.com/macros/s/AKfycbzpzN_V5rPDiUyuU8x2aWXjg1UZZZsCcubCqjJrg14johENQOBI2pUGkkO1LZ0nDSXgnw/exec";
+    const apiUrl = config.apiUrl || defaultApiUrl;
+    const uploadUrl = config.uploadUrl || (config.apiUrl ? config.apiUrl : null) || defaultUploadUrl;
+    const buildUrl = typeof config.buildUrl === "function" ? config.buildUrl : (path) => path;
     const form = document.getElementById("uploadForm");
     const message = document.getElementById("message");
 
@@ -100,7 +106,7 @@
 
       try {
         // 🔐 Verify access key via lookup
-        const verify = await fetch(`https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`);
+        const verify = await fetch(`${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`);
         const verifyData = await verify.json();
 
         if (!verifyData.success || verifyData.data[6] !== accessKey) {
@@ -122,7 +128,7 @@
             base64: base64
           };
 
-          const res = await fetch("https://script.google.com/macros/s/AKfycbzpzN_V5rPDiUyuU8x2aWXjg1UZZZsCcubCqjJrg14johENQOBI2pUGkkO1LZ0nDSXgnw/exec", {
+          const res = await fetch(uploadUrl, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
@@ -154,7 +160,7 @@
         form.reset();
 
         setTimeout(() => {
-        window.location.href = "index.html";
+        window.location.href = buildUrl("index.html");
         }, 2000);
 
     });

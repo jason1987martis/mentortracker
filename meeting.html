@@ -232,16 +232,16 @@
 </head>
 <body>
   <nav class="top-nav" aria-label="Main navigation">
-    <a href="index.html">Home</a>
-    <a href="register.html">Register</a>
-    <a href="academic.html">Academic</a>
-    <a href="activities.html">Activities</a>
-    <a href="meeting.html" class="active">Meetings</a>
-    <a href="viewdash.html">Dashboard</a>
+    <a href="index.html" data-keep-query>Home</a>
+    <a href="register.html" data-keep-query>Register</a>
+    <a href="academic.html" data-keep-query>Academic</a>
+    <a href="activities.html" data-keep-query>Activities</a>
+    <a href="meeting.html" class="active" data-keep-query>Meetings</a>
+    <a href="viewdash.html" data-keep-query>Dashboard</a>
   </nav>
 
   <div class="container">
-    <a href="index.html" class="back-btn" onclick="if (window.history.length > 1) { window.history.back(); return false; }">
+    <a href="index.html" class="back-btn" data-keep-query onclick="if (window.history.length > 1) { window.history.back(); return false; }">
       <span class="back-icon" aria-hidden="true">&#8592;</span>
       <span>Back</span>
     </a>
@@ -278,7 +278,10 @@
     </form>
   </div>
 
+  <script src="config-helper.js"></script>
   <script>
+    const config = window.MENTOR_TRACKER_CONFIG || {};
+    const apiUrl = config.apiUrl || "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
     const form = document.getElementById("meetingForm");
     const message = document.getElementById("message");
 
@@ -296,7 +299,7 @@
 
       try {
         const verify = await fetch(
-          `https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec?formType=lookup&usn=${encodeURIComponent(usn)}`
+          `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`
         );
         const verifyData = await verify.json();
 
@@ -316,7 +319,7 @@
         body.append("solution", solution);
 
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec",
+          apiUrl,
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
