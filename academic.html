@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Academic Record Entry | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script>
+    window.MENTOR_TRACKER_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+    window.MENTOR_TRACKER_AUTH_OPTIONS = {
+      allowedDomain: "nmamit.in",
+      allowedEmails: ["jason1987martis@nitte.edu.in"]
+    };
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="auth-helper.js" defer></script>
   <style>
     /* === Global Layout === */
     body {
@@ -298,7 +307,7 @@
     <img src="logo.jpg" alt="Nitte Logo" class="logo">
     <h2>Academic Record Entry</h2>
 
-    <form id="academicForm">
+    <form id="academicForm" data-auth-required>
       <label for="usn">USN</label>
       <input type="text" id="usn" required />
 
@@ -321,10 +330,10 @@
       <div id="subjectsContainer"></div>
 
       <div class="action-buttons">
-        <button type="button" class="add-btn" onclick="addSubjectRow()">➕ Add Subject</button>
+        <button type="button" class="add-btn" onclick="addSubjectRow()">+ Add Subject</button>
       </div>
 
-      <button type="submit" id="submitBtn" class="submit-btn">📘 Submit Academic Record</button>
+      <button type="submit" id="submitBtn" class="submit-btn">Submit Academic Record</button>
 
       <div id="message" class="message"></div>
     </form>
@@ -357,7 +366,7 @@
         </select>
         <input type="number" placeholder="Grade Point" step="0.01" required>
         <input type="number" placeholder="Credits" step="0.01" required>
-        <button type="button" class="delete-btn" onclick="this.parentElement.remove()">❌</button>
+        <button type="button" class="delete-btn" onclick="this.parentElement.remove()">Remove</button>
       `;
       container.appendChild(div);
     }
@@ -373,12 +382,12 @@
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
 
-      const lookupURL = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`;
+      const lookupURL = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`;
 
       try {
-        const lookupRes = await fetch(lookupURL);
+        const lookupRes = await MENTOR_TRACKER_secureFetch(lookupURL);
         const lookupData = await lookupRes.json();
-        if (!lookupData.success || lookupData.data[6] !== accessKey) {
+        if (!lookupData.success) {
           message.textContent = "Invalid USN or Access Key.";
           message.className = "message error";
           submitBtn.disabled = false;
@@ -415,7 +424,7 @@
         const body = new URLSearchParams(data).toString();
 
         try {
-          const res = await fetch(apiUrl, {
+          const res = await MENTOR_TRACKER_secureFetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: body
@@ -440,3 +449,4 @@
   </script>
 </body>
 </html>
+

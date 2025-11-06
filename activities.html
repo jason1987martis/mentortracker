@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Activity Record Entry | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script>
+    window.MENTOR_TRACKER_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+    window.MENTOR_TRACKER_AUTH_OPTIONS = {
+      allowedDomain: "nmamit.in",
+      allowedEmails: ["jason1987martis@nitte.edu.in"]
+    };
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="auth-helper.js" defer></script>
   <style>
     /* === Global Styles === */
     body {
@@ -334,7 +343,7 @@
     <h3>Activities List and their Points</h3>
     <iframe src="list.html"></iframe>
 
-    <form id="activityForm">
+    <form id="activityForm" data-auth-required>
       <label for="usn">USN</label>
       <input type="text" id="usn" required />
 
@@ -353,10 +362,10 @@
       <div id="activitiesContainer"></div>
 
       <div class="button-row">
-        <button type="button" class="add-btn" onclick="addActivityRow()">➕ Add Activity</button>
+        <button type="button" class="add-btn" onclick="addActivityRow()">+ Add Activity</button>
       </div>
 
-      <button type="submit" class="submit-btn">📘 Submit Activities</button>
+      <button type="submit" class="submit-btn">Submit Activities</button>
       <div id="message" class="message"></div>
     </form>
   </div>
@@ -368,6 +377,7 @@
     const form = document.getElementById("activityForm");
     const container = document.getElementById("activitiesContainer");
     const message = document.getElementById("message");
+    const submitBtn = form.querySelector(".submit-btn");
 
     const activityTypes = [
       "NSS/NCC/Red Cross", "Sports Participation", "Tech Symposium", "Cultural Event",
@@ -390,7 +400,7 @@
     <input type="number" placeholder="Activity Points (Consult Mentor)" required>
     <select required><option value="">Activity Type</option>${createTypeOptions()}</select>
     <input type="text" placeholder="Proof Link (Google Drive URL)" required>
-    <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
+    <button type="button" class="delete-btn" onclick="this.parentElement.remove()">Remove</button>
   `;
   container.appendChild(div);
 
@@ -409,13 +419,17 @@
       const accessKey = document.getElementById("accessKey").value.trim();
       const semester = document.getElementById("semester").value;
 
-      const verify = await fetch(`${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`);
-      const verifyData = await verify.json();
-      if (!verifyData.success || verifyData.data[6] !== accessKey) {
-        message.textContent = "Invalid USN or Access Key.";
-        message.className = "message error";
-        return;
-      }
+      submitBtn.disabled = true;
+
+      try {
+        const verify = await MENTOR_TRACKER_secureFetch(`${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`);
+        const verifyData = await verify.json();
+        if (!verifyData.success) {
+          message.textContent = "Invalid USN or Access Key.";
+          message.className = "message error";
+          submitBtn.disabled = false;
+          return;
+        }
 
       const rows = document.querySelectorAll(".activity-row");
       for (let row of rows) {
@@ -432,17 +446,18 @@
         formData.append("proof_link", inputs[4].value);
 
         try {
-          const res = await fetch(apiUrl, {
+          const res = await MENTOR_TRACKER_secureFetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formData.toString()
           });
           const result = await res.json();
-          if (!result.success) throw new Error(result.error);
+          if (!result.success) throw new Error(result.error || "Failed");
         } catch (err) {
           console.error(err);
           message.textContent = "Failed to save one or more activity records.";
           message.className = "message error";
+          submitBtn.disabled = false;
           return;
         }
       }
@@ -451,7 +466,16 @@
       message.className = "message success";
       form.reset();
       container.innerHTML = "";
+      } catch (err) {
+        if (message.className !== "message error") {
+          message.textContent = err.message || "Failed to save activity records.";
+          message.className = "message error";
+        }
+      } finally {
+        submitBtn.disabled = false;
+      }
     });
   </script>
 </body>
 </html>
+

@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Upload Proof</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <script>
+    window.MENTOR_TRACKER_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+    window.MENTOR_TRACKER_AUTH_OPTIONS = {
+      allowedDomain: "nmamit.in",
+      allowedEmails: ["jason1987martis@nitte.edu.in"]
+    };
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="auth-helper.js" defer></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -64,7 +73,7 @@
 <body>
   <div class="container">
     <h2>Upload Photo (PDF/Image)</h2>
-    <form id="uploadForm">
+    <form id="uploadForm" data-auth-required>
       <label for="usn">USN</label>
       <input type="text" id="usn" required />
 
@@ -78,21 +87,65 @@
       <div id="message" class="message"></div>
     </form>
   </div>
-  <script src="config-helper.js"></script>
+    <script src="config-helper.js"></script>
   <script>
     const config = window.MENTOR_TRACKER_CONFIG || {};
     const defaultApiUrl = "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
     const defaultUploadUrl = "https://script.google.com/macros/s/AKfycbzpzN_V5rPDiUyuU8x2aWXjg1UZZZsCcubCqjJrg14johENQOBI2pUGkkO1LZ0nDSXgnw/exec";
     const apiUrl = config.apiUrl || defaultApiUrl;
-    const uploadUrl = config.uploadUrl || (config.apiUrl ? config.apiUrl : null) || defaultUploadUrl;
+    const uploadUrl = config.uploadUrl || defaultUploadUrl;
     const buildUrl = typeof config.buildUrl === "function" ? config.buildUrl : (path) => path;
+
     const form = document.getElementById("uploadForm");
     const message = document.getElementById("message");
+    const submitButton = document.getElementById("pic");
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    function enableButton() {
+      submitButton.disabled = false;
+    }
+
+    async function verifyAccess(usn, accessKey) {
+      const url = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`;
+      const response = await MENTOR_TRACKER_secureFetch(url);
+      if (!response.ok) {
+        throw new Error(`Lookup failed (${response.status})`);
+      }
+      const payload = await response.json();
+      return Boolean(payload.success);
+    }
+
+    function toBase64(arrayBuffer) {
+      let binary = "";
+      const bytes = new Uint8Array(arrayBuffer);
+      const chunkSize = 0x8000;
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(offset, offset + chunkSize));
+      }
+      return btoa(binary);
+    }
+
+    async function uploadPayload(data) {
+      const response = await MENTOR_TRACKER_secureFetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        throw new Error(`Upload failed (${response.status})`);
+      }
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || result.message || "Upload failed.");
+      }
+      return result.fileUrl;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
       message.textContent = "";
-      pic.disabled=true;
+      message.className = "message";
+      submitButton.disabled = true;
+
       const usn = document.getElementById("usn").value.trim();
       const accessKey = document.getElementById("accessKey").value.trim();
       const file = document.getElementById("fileInput").files[0];
@@ -100,72 +153,62 @@
       if (!usn || !accessKey || !file) {
         message.textContent = "All fields are required.";
         message.className = "message error";
-        pic.disabled=false;
+        enableButton();
         return;
       }
 
-      try {
-        // 🔐 Verify access key via lookup
-        const verify = await fetch(`${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`);
-        const verifyData = await verify.json();
+      if (!/^image\/(jpeg|png)$|^application\/pdf$/.test(file.type)) {
+        message.textContent = "Only JPG, PNG, or PDF files are allowed.";
+        message.className = "message error";
+        enableButton();
+        return;
+      }
 
-        if (!verifyData.success || verifyData.data[6] !== accessKey) {
+      if (file.size > 5 * 1024 * 1024) {
+        message.textContent = "File is too large (max 5 MB).";
+        message.className = "message error";
+        enableButton();
+        return;
+      }
+
+      message.innerHTML = '<div class="loader"></div><br>Validating access & uploading...';
+
+      try {
+        const authorised = await verifyAccess(usn, accessKey);
+        if (!authorised) {
           message.textContent = "Invalid USN or Access Key.";
           message.className = "message error";
-          pic.disabled=false;
+          enableButton();
           return;
         }
 
-        // 📤 Proceed with upload
-        const reader = new FileReader();
-        reader.onload = async function (event) {
-          const base64 = btoa(event.target.result);
-          const data = {
-            usn: usn,
-            accessKey: accessKey,
-            filename: file.name,
-            mimeType: file.type,
-            base64: base64
-          };
+        const arrayBuffer = await file.arrayBuffer();
+        const base64 = toBase64(arrayBuffer);
 
-          const res = await fetch(uploadUrl, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-          });
+        const fileUrl = await uploadPayload({
+          usn,
+          accessKey,
+          filename: file.name,
+          mimeType: file.type || "application/octet-stream",
+          base64
+        });
 
-          const result = await res.json();
-          if (result.status === "success") {
-            message.textContent = "File uploaded successfully.";
-            message.className = "message success";
-            form.reset();
-          } else {
-            throw new Error(result.message);
-            pic.disabled=false;
-          }
-        };
-
-        reader.readAsBinaryString(file);
-      } catch (err) {
-        console.error(err);
-        message.textContent = "Upload failed.";
-        message.className = "message error";
-        pic.disabled=false;
-      }
-
-            // Just assume success, then redirect
-        message.textContent = "File uploaded successfully. Redirecting...";
+        message.innerHTML = `File uploaded successfully.<br><a href="${fileUrl}" target="_blank" rel="noopener noreferrer">View uploaded file</a>`;
         message.className = "message success";
         form.reset();
 
         setTimeout(() => {
-        window.location.href = buildUrl("index.html");
-        }, 2000);
-
+          window.location.href = buildUrl("index.html");
+        }, 2500);
+      } catch (error) {
+        console.error("[MentorTracker] Upload failed", error);
+        message.textContent = error.message || "Upload failed.";
+        message.className = "message error";
+      } finally {
+        enableButton();
+      }
     });
-
-
   </script>
 </body>
 </html>
+

@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Registration | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script>
+    window.MENTOR_TRACKER_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+    window.MENTOR_TRACKER_AUTH_OPTIONS = {
+      allowedDomain: "nmamit.in",
+      allowedEmails: ["jason1987martis@nitte.edu.in"]
+    };
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="auth-helper.js" defer></script>
   <style>
     /* === General Page Style === */
     body {
@@ -243,7 +252,7 @@
     </a>
     <img src="logo.jpg" alt="Nitte Logo" class="logo" />
     <h2>Student Registration</h2>
-    <form id="registerForm">
+    <form id="registerForm" data-auth-required>
       <label for="name">Full Name</label>
       <input type="text" id="name" required />
 
@@ -314,37 +323,21 @@
     const message = document.getElementById("message");
     const registerBtn = document.getElementById("registerBtn");
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      message.innerHTML = '<div class="loader"></div><br>Trying to register student. Please wait...';
-      message.className = "message error";
-      registerBtn.disabled = true; // Disable button during submission
-
-      const usn = document.getElementById("usn").value.trim();
-      const accessKey = generateAccessKey(usn);
+    async function verifyNotRegistered(usn) {
       const lookupURL = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`;
-
-      try {
-        const lookupRes = await fetch(lookupURL);
-        const lookupData = await lookupRes.json();
-        if (lookupData.success) {
-          message.textContent = "Student already registered. Please do not register again.";
-          message.className = "message error";
-          registerBtn.disabled = false;
-          return;
-        }
-      } catch (error) {
-        console.error("Lookup failed", error);
-        message.textContent = "Could not verify student. Try again.";
-        message.className = "message error";
-        registerBtn.disabled = false;
-        return;
+      const response = await MENTOR_TRACKER_secureFetch(lookupURL);
+      if (!response.ok) {
+        throw new Error(`Lookup request failed (${response.status})`);
       }
+      const data = await response.json();
+      return Boolean(data.success);
+    }
 
-      const data = {
+    function collectRegistrationData(usn) {
+      return {
         formType: "registration",
+        usn,
         name: document.getElementById("name").value,
-        usn: usn,
         dob: document.getElementById("dob").value,
         sslc: document.getElementById("sslc").value,
         puc: document.getElementById("puc").value,
@@ -359,57 +352,84 @@
         mother_job: document.getElementById("mother_job").value,
         res_address: document.getElementById("res_address").value,
         father_phone: document.getElementById("father_phone").value,
-        mother_phone: document.getElementById("mother_phone").value,
-        accessKey: accessKey
+        mother_phone: document.getElementById("mother_phone").value
       };
+    }
 
-      const body = new URLSearchParams(data).toString();
+    async function submitAndHandleResponse(payload) {
+      const body = new URLSearchParams(payload).toString();
+      const response = await MENTOR_TRACKER_secureFetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body
+      });
+      if (!response.ok) {
+        throw new Error(`Registration failed (${response.status})`);
+      }
+      const result = await response.json();
+      if (!result.success || !result.accessKey) {
+        throw new Error(result.error || "Unexpected response from server.");
+      }
+      return result.accessKey;
+    }
+
+    function deliverAccessKey(usn, accessKey) {
+      const content = `Student USN: ${usn}\nAccess Key: ${accessKey}\n\nPlease keep this key safe for login.`;
+      const blob = new Blob([content], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `AccessKey_${usn}.txt`;
+      link.click();
+
+      navigator.clipboard.writeText(accessKey)
+        .then(() => console.info("[MentorTracker] Access key copied to clipboard."))
+        .catch(err => console.warn("[MentorTracker] Clipboard copy failed:", err));
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      message.innerHTML = '<div class="loader"></div><br>Trying to register student. Please wait...';
+      message.className = "message error";
+      registerBtn.disabled = true;
+
+      const usn = document.getElementById("usn").value.trim();
+      if (!usn) {
+        message.textContent = "USN is required.";
+        registerBtn.disabled = false;
+        return;
+      }
 
       try {
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: body
-        });
-
-        const result = await res.json();
-        if (result.success) {
-          const content = `Student USN: ${usn}\nAccess Key: ${accessKey}\n\nPlease keep this key safe for login.`;
-          const blob = new Blob([content], { type: "text/plain" });
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = `AccessKey_${usn}.txt`;
-          link.click();
-
-          navigator.clipboard.writeText(accessKey)
-            .then(() => console.log("Access Key copied"))
-            .catch(err => console.error("Clipboard error:", err));
-
-          alert(`✅ Registration Successful!\n\nYour Access Key is: ${accessKey}\n\n👉 It has been copied to your clipboard\n👉 A copy has been downloaded to your system\n\nPlease save it safely before continuing.`);
-
-          message.textContent = `Registered successfully. Access Key: ${accessKey}`;
-          message.className = "message success";
-          form.reset();
-
-          setTimeout(() => {
-            window.location.href = buildUrl("photoupload.html");
-          }, 5000);
-        } else {
-          throw new Error(result.error || "Unknown error");
+        const alreadyRegistered = await verifyNotRegistered(usn);
+        if (alreadyRegistered) {
+          message.textContent = "Student already registered. Please do not register again.";
+          message.className = "message error";
+          registerBtn.disabled = false;
+          return;
         }
-      } catch (err) {
-        console.error("Registration failed", err);
-        message.textContent = "Error saving student data.";
+
+        const registrationPayload = collectRegistrationData(usn);
+        const serverKey = await submitAndHandleResponse(registrationPayload);
+
+        deliverAccessKey(usn, serverKey);
+        alert(`Registration Successful!\n\nYour Access Key is: ${serverKey}\n\nIt has been copied to your clipboard and downloaded as a text file.\n\nPlease save it safely before continuing.`);
+
+        message.textContent = `Registered successfully. Access Key: ${serverKey}`;
+        message.className = "message success";
+        form.reset();
+
+        setTimeout(() => {
+          window.location.href = buildUrl("photoupload.html");
+        }, 5000);
+      } catch (error) {
+        console.error("[MentorTracker] Registration failed", error);
+        message.textContent = error.message || "Error saving student data.";
         message.className = "message error";
+      } finally {
         registerBtn.disabled = false;
       }
     });
-
-    function generateAccessKey(usn) {
-      const prefix = usn.slice(0, 2).toUpperCase();
-      const suffix = Math.floor(1000 + Math.random() * 9000);
-      return `${prefix}-${suffix}`;
-    }
   </script>
 </body>
 </html>
+

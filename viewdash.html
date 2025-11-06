@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Dashboard | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script>
+    window.MENTOR_TRACKER_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+    window.MENTOR_TRACKER_AUTH_OPTIONS = {
+      allowedDomain: "nmamit.in",
+      allowedEmails: ["jason1987martis@nitte.edu.in"]
+    };
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="auth-helper.js" defer></script>
 
-  <!-- ✅ Plotly.js CDN -->
+  <!-- Plotly.js CDN -->
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 
   <style>
@@ -312,7 +321,7 @@
     <a href="viewdash.html" class="active" data-keep-query>Dashboard</a>
   </nav>
 
-  <div class="container">
+  <div class="container" data-auth-required>
     <a href="index.html" class="back-btn" data-keep-query onclick="if (window.history.length > 1) { window.history.back(); return false; }">
       <span class="back-icon" aria-hidden="true">&#8592;</span>
       <span>Back</span>
@@ -334,9 +343,7 @@
       <div id="personalInfo" class="section"></div>
       <!-- Summary & Charts -->
     <div id="summaryWrapper" style="display:none;">
-      <button id="toggleSummary" class="toggle-btn" onclick="toggleSummarySection()">
-        ▼ Show Summary & Charts
-      </button>
+      <button id="toggleSummary" class="toggle-btn" onclick="toggleSummarySection()">Show Summary & Charts</button>
 
       <div id="summaryContainer" class="collapsible">
         <div class="summary">
@@ -346,12 +353,12 @@
         </div>
 
         <div class="chart-card">
-          <h3 style="text-align:center; color:#0d47a1;">📈 SGPA per Semester</h3>
+          <h3 style="text-align:center; color:#0d47a1;">SGPA per Semester</h3>
           <div id="sgpaChart"></div>
         </div>
 
         <div class="chart-card">
-          <h3 style="text-align:center; color:#0d47a1;">🏅 Activity Points per Semester</h3>
+          <h3 style="text-align:center; color:#0d47a1;">Activity Points per Semester</h3>
           <div id="activityChart"></div>
         </div>
       </div>
@@ -383,7 +390,7 @@ async function loadDashboard() {
   errorMsg.innerHTML = '<span class="loader"></span>Fetching Records. Please Wait...';
 
   try {
-    const res = await fetch(`${apiUrl}?formType=dashboard&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`);
+    const res = await MENTOR_TRACKER_secureFetch(`${apiUrl}?formType=dashboard&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`);
     const data = await res.json();
 
     if (!data.success) {
@@ -396,7 +403,7 @@ async function loadDashboard() {
     document.getElementById("summaryWrapper").style.display = "block";
     document.getElementById("summaryContainer").classList.add("active");
     document.getElementById("summaryContainer").style.display = "block";
-    document.getElementById("toggleSummary").textContent = "▲ Hide Summary & Charts";
+    document.getElementById("toggleSummary").textContent = "Hide Summary & Charts";
 
     renderPersonalInfo(data.personal || {});
     renderAcademicInfo(data.academic || {});
@@ -404,7 +411,7 @@ async function loadDashboard() {
     renderMeetings(data.meetings || {});
     computeAndDisplaySummary(data.academic || {}, data.activities || {});
 
-    errorMsg.textContent = "✅ Records fetched successfully!";
+    errorMsg.textContent = "Records fetched successfully!";
   } catch (err) {
     console.error(err);
     errorMsg.textContent = "Something went wrong. Please try again later.";
@@ -516,7 +523,7 @@ function toggleSummarySection() {
   const isActive = !summaryContainer.classList.contains("active");
   summaryContainer.classList.toggle("active", isActive);
   summaryContainer.style.display = isActive ? "block" : "none";
-  toggleBtn.textContent = isActive ? "▲ Hide Summary & Charts" : "▼ Show Summary & Charts";
+  toggleBtn.textContent = isActive ? "Hide Summary & Charts" : "Show Summary & Charts";
 }
 
 /* === TABLE RENDERING FUNCTIONS === */
@@ -612,3 +619,5 @@ function escapeHTML(str) {
 </script>
 </body>
 </html>
+
+

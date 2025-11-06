@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mentor Meeting Record | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script>
+    window.MENTOR_TRACKER_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+    window.MENTOR_TRACKER_AUTH_OPTIONS = {
+      allowedDomain: "nmamit.in",
+      allowedEmails: ["jason1987martis@nitte.edu.in"]
+    };
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="auth-helper.js" defer></script>
   <style>
     /* === Global Layout === */
     body {
@@ -248,7 +257,7 @@
     <img src="logo.jpg" alt="Nitte Logo" class="logo" />
     <h2>Mentor Meeting Record</h2>
 
-    <form id="meetingForm">
+    <form id="meetingForm" data-auth-required>
       <label for="usn">USN</label>
       <input type="text" id="usn" required />
 
@@ -273,21 +282,21 @@
       <label for="solution">Issue Solved</label>
       <textarea id="solution" rows="3" required></textarea>
 
-      <button type="submit">📘 Submit Meeting Record</button>
+      <button type="submit">Submit Meeting Record</button>
       <div id="message" class="message"></div>
     </form>
   </div>
 
-  <script src="config-helper.js"></script>
+    <script src="config-helper.js"></script>
   <script>
     const config = window.MENTOR_TRACKER_CONFIG || {};
     const apiUrl = config.apiUrl || "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
     const form = document.getElementById("meetingForm");
     const message = document.getElementById("message");
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      message.innerHTML = '<div class="loader"></div><br>Uploading Entries. Please Wait...';
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      message.innerHTML = '<div class="loader"></div><br>Uploading entries. Please wait...';
       message.className = "message error";
 
       const usn = document.getElementById("usn").value.trim();
@@ -298,12 +307,11 @@
       const solution = document.getElementById("solution").value.trim();
 
       try {
-        const verify = await fetch(
-          `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`
+        const verify = await MENTOR_TRACKER_secureFetch(
+          `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`
         );
         const verifyData = await verify.json();
-
-        if (!verifyData.success || verifyData.data[6] !== accessKey) {
+        if (!verifyData.success) {
           message.textContent = "Invalid USN or Access Key.";
           message.className = "message error";
           return;
@@ -318,27 +326,27 @@
         body.append("problem", problem);
         body.append("solution", solution);
 
-        const res = await fetch(
-          apiUrl,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: body
-          }
-        );
+        const res = await MENTOR_TRACKER_secureFetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
+        });
 
         const result = await res.json();
-        if (!result.success) throw new Error(result.error);
+        if (!result.success) throw new Error(result.error || "Failed to save meeting record.");
 
-        message.textContent = "✅ Meeting record saved successfully.";
+        message.textContent = "Meeting record saved successfully.";
         message.className = "message success";
         form.reset();
-      } catch (err) {
-        console.error(err);
-        message.textContent = "⚠️ Failed to save meeting record.";
+      } catch (error) {
+        console.error("[MentorTracker] Meeting save failed", error);
+        message.textContent = error.message || "Failed to save meeting record.";
         message.className = "message error";
       }
     });
   </script>
 </body>
 </html>
+
+
+

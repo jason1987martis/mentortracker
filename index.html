@@ -10,6 +10,15 @@
 
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    window.MENTOR_TRACKER_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+    window.MENTOR_TRACKER_AUTH_OPTIONS = {
+      allowedDomain: "nmamit.in",
+      allowedEmails: ["jason1987martis@nitte.edu.in"]
+    };
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="auth-helper.js" defer></script>
   <style>
     /* === Global Styles === */
     body {
@@ -141,14 +150,14 @@
         </a>
       </div>
 
-      <a class="button important" href="instructions.html" data-keep-query>📘 How to Use this Portal (Please read this First!)</a>
-      <a class="button" href="register.html" data-keep-query>🧍‍♂️ Student Registration</a>
-      <a class="button" href="academic.html" data-keep-query>📚 Academic Entry</a>
-      <a class="button" href="activities.html" data-keep-query>🎯 Activity Points Entry</a>
-      <a class="button" href="meeting.html" data-keep-query>🗓️ Meeting Record Entry</a>
-      <a class="button" href="viewdash.html" data-keep-query>📊 View Dashboard</a>
+      <a class="button important" href="instructions.html" data-keep-query>How to Use this Portal (Please read this First!)</a>
+      <a class="button" href="register.html" data-keep-query>Student Registration</a>
+      <a class="button" href="academic.html" data-keep-query>Academic Entry</a>
+      <a class="button" href="activities.html" data-keep-query>Activity Points Entry</a>
+      <a class="button" href="meeting.html" data-keep-query>Meeting Record Entry</a>
+      <a class="button" href="viewdash.html" data-keep-query>View Dashboard</a>
 
-      <footer>© 2025 Mentor Tracker | NMAMIT ISE Mentorship Portal</footer>
+      <footer>(C) 2025 Mentor Tracker | NMAMIT ISE Mentorship Portal</footer>
     </div>
   </div>
 
@@ -158,8 +167,8 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log('✅ Service Worker registered:', reg))
-      .catch(err => console.log('❌ Service Worker registration failed:', err));
+      .then(reg => console.log('Service Worker registered:', reg))
+      .catch(err => console.log('Service Worker registration failed:', err));
   });
 }
 </script>
@@ -168,6 +177,7 @@ if ('serviceWorker' in navigator) {
 
 </body>
 </html>
+
 
 
 
