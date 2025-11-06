@@ -323,9 +323,6 @@
     const token = await requireToken();
     const requestOptions = Object.assign({}, options);
     const headers = new Headers(requestOptions.headers || {});
-    headers.set("Authorization", `Bearer ${token}`);
-    requestOptions.headers = headers;
-
     const method = (requestOptions.method || "GET").toUpperCase();
     if (method === "GET" || method === "HEAD") {
       url = appendTokenToUrl(url, token);
