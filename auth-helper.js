@@ -10,6 +10,7 @@
   function getAuthOptions() {
     return Object.assign({
       allowedDomain: "",
+      allowedDomains: [],
       allowedEmails: [],
       autoSelect: true,
       prompt: true,
@@ -186,20 +187,28 @@
     }
 
     const allowedDomain = (constraints.allowedDomain || "").toLowerCase();
+    const allowedDomains = Array.isArray(constraints.allowedDomains)
+      ? constraints.allowedDomains.map(domain => (domain || "").toLowerCase()).filter(Boolean)
+      : [];
+    if (allowedDomain) allowedDomains.unshift(allowedDomain);
+    const uniqueDomains = Array.from(new Set(allowedDomains));
+
     const allowedEmails = (constraints.allowedEmails || []).map(e => e.toLowerCase());
     const email = (decoded.email || "").toLowerCase();
     const domain = (decoded.hd || email.split("@")[1] || "").toLowerCase();
 
-    if (allowedEmails.length > 0 && allowedEmails.indexOf(email) === -1) {
-      if (!allowedDomain || domain !== allowedDomain) {
-        alert("This account is not authorised for Mentor Tracker.");
-        signOut();
-        return;
-      }
-    }
+    const emailAllowed = allowedEmails.indexOf(email) !== -1;
+    const domainAllowed = uniqueDomains.indexOf(domain) !== -1;
+    const restrictionsActive = allowedEmails.length > 0 || uniqueDomains.length > 0;
 
-    if (allowedDomain && domain !== allowedDomain && allowedEmails.indexOf(email) === -1) {
-      alert("Please sign in with an account from " + allowedDomain);
+    if (restrictionsActive && !emailAllowed && !domainAllowed) {
+      const domainMessage = uniqueDomains.length
+        ? "Please sign in with an account from " + uniqueDomains.join(", ")
+        : "This account is not authorised for Mentor Tracker.";
+      const finalMessage = uniqueDomains.length && allowedEmails.length
+        ? domainMessage + " or use an explicitly authorised account."
+        : domainMessage;
+      alert(finalMessage);
       signOut();
       return;
     }

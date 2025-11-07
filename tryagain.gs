@@ -6,14 +6,24 @@
 
 const CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
 const ALLOWED_EMAILS = ["jason1987martis@nitte.edu.in"];
-const ALLOWED_DOMAIN = "nmamit.in";
+const ALLOWED_DOMAINS = ["nmamit.in"];
 const TOKEN_CACHE_SECONDS = 300;
 const TOKEN_CACHE_PREFIX = "mentortracker:idtoken:";
-const ALLOWED_ORIGINS = ["https://jason1987martis.github.io", "*"];
+const ALLOWED_ORIGINS = ["*"];
 const CORS_ALLOW_HEADERS = "Authorization, Content-Type";
 const CORS_ALLOW_METHODS = "GET,POST,OPTIONS";
 const CORS_MAX_AGE = "3600";
 const ACTIVITY_FOLDER_ID = "MentorData"; // TODO: replace with actual Drive folder ID
+
+function sha256Hex(value) {
+  if (!value) return "";
+  const digest = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    value,
+    Utilities.Charset.UTF_8
+  );
+  return digest.map(byte => ('0' + (byte & 0xff).toString(16)).slice(-2)).join('');
+}
 
 function doGet(e) {
   return handleRequest("GET", e);
@@ -139,7 +149,7 @@ function verifyIdToken(token) {
   if (!token) return null;
 
   const cache = CacheService.getScriptCache();
-  const cacheKey = TOKEN_CACHE_PREFIX + token;
+  const cacheKey = TOKEN_CACHE_PREFIX + sha256Hex(token);
   const cached = cache.get(cacheKey);
   if (cached) return JSON.parse(cached);
 
@@ -188,14 +198,18 @@ function isEmailAllowed(payload) {
     return true;
   }
 
-  if (ALLOWED_DOMAIN) {
+  const domainAllowList = (ALLOWED_DOMAINS || [])
+    .map(domain => (domain || "").toLowerCase())
+    .filter(Boolean);
+
+  if (domainAllowList.length > 0) {
     const domain = (payload.hd || email.split("@")[1] || "").toLowerCase();
-    if (domain === ALLOWED_DOMAIN.toLowerCase()) {
+    if (domainAllowList.indexOf(domain) !== -1) {
       return true;
     }
   }
 
-  return ALLOWED_EMAILS.length === 0 && !ALLOWED_DOMAIN;
+  return ALLOWED_EMAILS.length === 0 && domainAllowList.length === 0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -214,14 +228,14 @@ function resolveCorsOrigin() {
 
 function withCors(output) {
   const origin = resolveCorsOrigin();
-  return output
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", origin)
-    .setHeader("Access-Control-Allow-Headers", CORS_ALLOW_HEADERS)
-    .setHeader("Access-Control-Allow-Methods", CORS_ALLOW_METHODS)
-    .setHeader("Access-Control-Max-Age", CORS_MAX_AGE)
-    .setHeader("Access-Control-Allow-Credentials", "false")
-    .setHeader("Vary", "Origin");
+  output.setMimeType(ContentService.MimeType.JSON);
+  output.setHeader("Access-Control-Allow-Origin", origin);
+  output.setHeader("Access-Control-Allow-Headers", CORS_ALLOW_HEADERS);
+  output.setHeader("Access-Control-Allow-Methods", CORS_ALLOW_METHODS);
+  output.setHeader("Access-Control-Max-Age", CORS_MAX_AGE);
+  output.setHeader("Access-Control-Allow-Credentials", "false");
+  output.setHeader("Vary", "Origin");
+  return output;
 }
 
 function jsonResponse(payload) {

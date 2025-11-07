@@ -4,7 +4,7 @@
 
 const UPLOAD_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
 const UPLOAD_ALLOWED_EMAILS = ["jason1987martis@nitte.edu.in"];
-const UPLOAD_ALLOWED_DOMAIN = "nmamit.in";
+const UPLOAD_ALLOWED_DOMAINS = ["nmamit.in"];
 const UPLOAD_TOKEN_CACHE_SECONDS = 300;
 const UPLOAD_TOKEN_CACHE_PREFIX = "mentortracker:upload:idtoken:";
 
@@ -12,7 +12,7 @@ const SHEET_ID = "11dZ8970TSuvCvfk33lJdbH3-R95EIPAclobuUQD3Ee4";
 const FOLDER_ID = "1NeLc2pp6PST4I-Wf6rkT6LvW292lglWe";
 const PHOTO_SHEET_NAME = "photo";
 const STUDENT_SHEET_NAME = "students";
-const UPLOAD_ALLOWED_ORIGINS = ["https://jason1987martis.github.io", "*"];
+const UPLOAD_ALLOWED_ORIGINS = ["*"];
 const UPLOAD_CORS_ALLOW_HEADERS = "Authorization, Content-Type";
 const UPLOAD_CORS_ALLOW_METHODS = "POST,OPTIONS";
 const UPLOAD_CORS_MAX_AGE = "3600";
@@ -219,14 +219,18 @@ function isUploadEmailAllowed(payload) {
     return true;
   }
 
-  if (UPLOAD_ALLOWED_DOMAIN) {
+  const domainAllowList = (UPLOAD_ALLOWED_DOMAINS || [])
+    .map(domain => (domain || "").toLowerCase())
+    .filter(Boolean);
+
+  if (domainAllowList.length > 0) {
     const domain = (payload.hd || email.split("@")[1] || "").toLowerCase();
-    if (domain === UPLOAD_ALLOWED_DOMAIN.toLowerCase()) {
+    if (domainAllowList.indexOf(domain) !== -1) {
       return true;
     }
   }
 
-  return UPLOAD_ALLOWED_EMAILS.length === 0 && !UPLOAD_ALLOWED_DOMAIN;
+  return UPLOAD_ALLOWED_EMAILS.length === 0 && domainAllowList.length === 0;
 }
 
 function resolveUploadCorsOrigin() {
@@ -241,14 +245,14 @@ function resolveUploadCorsOrigin() {
 
 function uploadWithCors(output) {
   const origin = resolveUploadCorsOrigin();
-  return output
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", origin)
-    .setHeader("Access-Control-Allow-Headers", UPLOAD_CORS_ALLOW_HEADERS)
-    .setHeader("Access-Control-Allow-Methods", UPLOAD_CORS_ALLOW_METHODS)
-    .setHeader("Access-Control-Max-Age", UPLOAD_CORS_MAX_AGE)
-    .setHeader("Access-Control-Allow-Credentials", "false")
-    .setHeader("Vary", "Origin");
+  output.setMimeType(ContentService.MimeType.JSON);
+  output.setHeader("Access-Control-Allow-Origin", origin);
+  output.setHeader("Access-Control-Allow-Headers", UPLOAD_CORS_ALLOW_HEADERS);
+  output.setHeader("Access-Control-Allow-Methods", UPLOAD_CORS_ALLOW_METHODS);
+  output.setHeader("Access-Control-Max-Age", UPLOAD_CORS_MAX_AGE);
+  output.setHeader("Access-Control-Allow-Credentials", "false");
+  output.setHeader("Vary", "Origin");
+  return output;
 }
 
 function uploadJsonResponse(payload) {

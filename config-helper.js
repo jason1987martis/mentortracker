@@ -1,7 +1,9 @@
 // Shared helper to resolve Google Apps Script endpoints from query params or storage.
 (function () {
-  const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
-  const DEFAULT_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbzpzN_V5rPDiUyuU8x2aWXjg1UZZZsCcubCqjJrg14johENQOBI2pUGkkO1LZ0nDSXgnw/exec";
+  const globalDefaultApi = typeof window !== "undefined" ? window.MENTOR_TRACKER_DEFAULT_API_URL : undefined;
+  const globalDefaultUpload = typeof window !== "undefined" ? window.MENTOR_TRACKER_DEFAULT_UPLOAD_URL : undefined;
+  const DEFAULT_API_URL = globalDefaultApi || "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
+  const DEFAULT_UPLOAD_URL = globalDefaultUpload || "https://script.google.com/macros/s/AKfycbzpzN_V5rPDiUyuU8x2aWXjg1UZZZsCcubCqjJrg14johENQOBI2pUGkkO1LZ0nDSXgnw/exec";
 
   const params = new URLSearchParams(window.location.search);
   const paramApi = params.get("apiUrl");
