@@ -334,10 +334,19 @@
       return Boolean(data.success);
     }
 
-    function collectRegistrationData(usn) {
+    function generateAccessKey(usn) {
+      const prefix = (usn || "XXX").slice(0, 3).toUpperCase();
+      const randomSource = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID().split("-")[0]
+        : Math.random().toString(36).slice(2, 10);
+      return `${prefix}-${randomSource.toUpperCase()}`;
+    }
+
+    function collectRegistrationData(usn, accessKey) {
       return {
         formType: "registration",
         usn,
+        accessKey,
         name: document.getElementById("name").value,
         dob: document.getElementById("dob").value,
         sslc: document.getElementById("sslc").value,
@@ -368,10 +377,10 @@
         throw new Error(`Registration failed (${response.status})`);
       }
       const result = await response.json();
-      if (!result.success || !result.accessKey) {
+      if (!result.success) {
         throw new Error(result.error || "Unexpected response from server.");
       }
-      return result.accessKey;
+      return result;
     }
 
     function deliverAccessKey(usn, accessKey) {
@@ -409,13 +418,14 @@
           return;
         }
 
-        const registrationPayload = collectRegistrationData(usn);
-        const serverKey = await submitAndHandleResponse(registrationPayload);
+        const accessKey = generateAccessKey(usn);
+        const registrationPayload = collectRegistrationData(usn, accessKey);
+        await submitAndHandleResponse(registrationPayload);
 
-        deliverAccessKey(usn, serverKey);
-        alert(`Registration Successful!\n\nYour Access Key is: ${serverKey}\n\nIt has been copied to your clipboard and downloaded as a text file.\n\nPlease save it safely before continuing.`);
+        deliverAccessKey(usn, accessKey);
+        alert(`Registration Successful!\n\nYour Access Key is: ${accessKey}\n\nIt has been copied to your clipboard and downloaded as a text file.\n\nPlease save it safely before continuing.`);
 
-        message.textContent = `Registered successfully. Access Key: ${serverKey}`;
+        message.textContent = `Registered successfully. Access Key: ${accessKey}`;
         message.className = "message success";
         form.reset();
 
