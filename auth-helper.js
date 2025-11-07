@@ -1,5 +1,5 @@
 (function () {
-  const CLIENT_ID = window.MENTOR_TRACKER_CLIENT_ID || "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+  const CLIENT_ID = window.MENTOR_TRACKER_CLIENT_ID || "400955911855-1evjshtu3jsubqj08n75sfsvur11j0f6.apps.googleusercontent.com";
   const AUTH_EVENT = "mentortracker-auth-state";
 
   let idToken = null;

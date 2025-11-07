@@ -36,7 +36,7 @@ Both scripts verify the Google ID token server-side (`tokeninfo` API), enforce a
     window.MENTOR_TRACKER_CLIENT_ID = "YOUR_WEB_CLIENT_ID";
     window.MENTOR_TRACKER_AUTH_OPTIONS = {
       allowedEmails: ["jason1987martis@nitte.edu.in"],
-      allowedDomains: ["nmamit.in"]
+      allowedDomains: ["nmamit.in", "nitte.edu.in", "student.nitte.edu.in"]
     };
   </script>
   ```

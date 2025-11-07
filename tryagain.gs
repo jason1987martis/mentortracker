@@ -4,9 +4,9 @@
  * Update constants as needed before deploying.
  */
 
-const CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+const CLIENT_ID = "400955911855-1evjshtu3jsubqj08n75sfsvur11j0f6.apps.googleusercontent.com";
 const ALLOWED_EMAILS = ["jason1987martis@nitte.edu.in"];
-const ALLOWED_DOMAINS = ["nmamit.in"];
+const ALLOWED_DOMAINS = ["nmamit.in", "nitte.edu.in", "student.nitte.edu.in"];
 const TOKEN_CACHE_SECONDS = 300;
 const TOKEN_CACHE_PREFIX = "mentortracker:idtoken:";
 const ALLOWED_ORIGINS = ["*"];

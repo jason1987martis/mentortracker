@@ -2,9 +2,9 @@
  * Photo upload endpoint secured with Google Identity tokens.
  */
 
-const UPLOAD_CLIENT_ID = "470142220043-4pm52ffc5gapjdgtplf6uim5t5o1juj7.apps.googleusercontent.com";
+const UPLOAD_CLIENT_ID = "400955911855-1evjshtu3jsubqj08n75sfsvur11j0f6.apps.googleusercontent.com";
 const UPLOAD_ALLOWED_EMAILS = ["jason1987martis@nitte.edu.in"];
-const UPLOAD_ALLOWED_DOMAINS = ["nmamit.in"];
+const UPLOAD_ALLOWED_DOMAINS = ["nmamit.in", "nitte.edu.in", "student.nitte.edu.in"];
 const UPLOAD_TOKEN_CACHE_SECONDS = 300;
 const UPLOAD_TOKEN_CACHE_PREFIX = "mentortracker:upload:idtoken:";
 
