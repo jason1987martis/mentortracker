@@ -5,16 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Upload Proof</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-  <script>
-    window.MENTOR_TRACKER_CLIENT_ID = "400955911855-1evjshtu3jsubqj08n75sfsvur11j0f6.apps.googleusercontent.com";
-    window.MENTOR_TRACKER_AUTH_OPTIONS = {
-      allowedDomain: "nmamit.in",
-      allowedDomains: ["nmamit.in", "nitte.edu.in", "student.nitte.edu.in"],
-      allowedEmails: ["jason1987martis@nitte.edu.in"]
-    };
-  </script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="auth-helper.js" defer></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -74,7 +64,7 @@
 <body>
   <div class="container">
     <h2>Upload Photo (PDF/Image)</h2>
-    <form id="uploadForm" data-auth-required>
+    <form id="uploadForm">
       <label for="usn">USN</label>
       <input type="text" id="usn" required />
 
@@ -106,13 +96,16 @@
     }
 
     async function verifyAccess(usn, accessKey) {
-      const url = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}&accessKey=${encodeURIComponent(accessKey)}`;
-      const response = await MENTOR_TRACKER_secureFetch(url);
+      const url = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`;
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Lookup failed (${response.status})`);
       }
       const payload = await response.json();
-      return Boolean(payload.success);
+      if (!payload || !payload.success || !payload.data) {
+        return false;
+      }
+      return payload.data[6] === accessKey;
     }
 
     function toBase64(arrayBuffer) {
