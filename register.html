@@ -5,15 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Registration | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-
-  <script>
-    window.MENTOR_TRACKER_CLIENT_ID = "400955911855-1evjshtu3jsubqj08n75sfsvur11j0f6.apps.googleusercontent.com";
-    window.MENTOR_TRACKER_AUTH_OPTIONS = {
-      allowedDomain: "nmamit.in",
-      allowedDomains: ["nmamit.in", "nitte.edu.in", "student.nitte.edu.in"],
-      allowedEmails: ["jason1987martis@nitte.edu.in"]
-    };
-  </script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="auth-helper.js" defer></script>
 
@@ -47,9 +38,6 @@
     }
 
     .top-nav a {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       color: #ffffff;
       text-decoration: none;
       font-weight: 600;
@@ -58,17 +46,8 @@
       transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
-    .top-nav a:hover,
-    .top-nav a:focus {
-      background-color: rgba(255, 255, 255, 0.18);
-      transform: translateY(-1px);
-      outline: none;
-    }
-
-    .top-nav .active {
-      background-color: rgba(255, 255, 255, 0.3);
-      color: #2a348d;
-    }
+    .top-nav a:hover { background-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
+    .top-nav .active { background-color: rgba(255,255,255,0.3); color: #2a348d; }
 
     .container {
       max-width: 700px;
@@ -80,12 +59,7 @@
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     }
 
-    h2 {
-      text-align: center;
-      color: #0d47a1;
-      font-weight: 700;
-      margin-bottom: 1.5rem;
-    }
+    h2 { text-align: center; color: #0d47a1; margin-bottom: 1.5rem; }
 
     label {
       display: block;
@@ -127,19 +101,23 @@
     .success { color: green; }
     .error { color: red; }
 
-    /* Embedded uploader */
     #uploadSection {
       display: none;
-      margin-top: 1.5rem;
       text-align: center;
+      margin-top: 1.5rem;
     }
 
-    iframe {
-      width: 100%;
-      height: 200px;
-      border: 2px dashed #2a348d;
-      border-radius: 10px;
+    #uploadBtn {
+      padding: 0.6rem 1.5rem;
+      background: #0d47a1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
     }
+
+    #uploadBtn:hover { background: #002171; }
   </style>
 </head>
 
@@ -154,10 +132,10 @@
   </nav>
 
   <div class="container">
-    <img src="logo.jpg" alt="Nitte Logo" class="logo" />
+    <img src="logo.jpg" alt="Nitte Logo" class="logo" style="width:90px;display:block;margin:auto;" />
     <h2>Student Registration</h2>
 
-    <form id="registerForm" data-auth-required>
+    <form id="registerForm">
       <label for="name">Full Name</label>
       <input type="text" id="name" required />
 
@@ -218,23 +196,20 @@
       <div class="message" id="message"></div>
     </form>
 
-    <!-- Embedded Upload Section -->
+    <!-- Upload Section (now opens popup) -->
     <div id="uploadSection">
       <h3>📸 Upload Student Photo</h3>
-      <iframe
-        id="uploadFrame"
-        src=""
-        title="Photo Upload Frame">
-      </iframe>
+      <button id="uploadBtn">Open Upload Page</button>
     </div>
   </div>
 
-  <script src="config-helper.js"></script>
   <script>
     const apiUrl = "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
     const form = document.getElementById("registerForm");
     const message = document.getElementById("message");
     const registerBtn = document.getElementById("registerBtn");
+    const uploadSection = document.getElementById("uploadSection");
+    const uploadBtn = document.getElementById("uploadBtn");
 
     async function verifyNotRegistered(usn) {
       const lookupURL = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`;
@@ -254,6 +229,7 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       message.textContent = "⏳ Registering student...";
+      message.className = "message";
       registerBtn.disabled = true;
 
       const usn = document.getElementById("usn").value.trim();
@@ -267,30 +243,26 @@
         const alreadyRegistered = await verifyNotRegistered(usn);
         if (alreadyRegistered) {
           message.textContent = "Student already registered.";
+          message.className = "message error";
           registerBtn.disabled = false;
           return;
         }
 
-        // Simulated registration save success
         message.textContent = "✅ Registered successfully.";
         message.className = "message success";
 
-        // Show upload section with iframe
-        const uploadFrame = document.getElementById("uploadFrame");
-        const uploadSection = document.getElementById("uploadSection");
-
-        const fileName = `${usn}_photo`;
-        const iframeSrc = "https://script.google.com/a/macros/nitte.edu.in/s/AKfycbx1sdVvmEaR1AXBKakpSp9zVcB2HMHylbadIyg4QN8MavyNoOhxRHEqt1ywUQAVby0FHg/exec?usn=" + encodeURIComponent(fileName);
-        uploadFrame.src = iframeSrc;
+        // Show upload button section
         uploadSection.style.display = "block";
 
-        // Wait for upload completion message
-        window.addEventListener("message", (event) => {
-          if (event.data?.status === "done") {
-            message.textContent = `✅ Registration complete. Photo uploaded for ${usn}.`;
-            message.className = "message success";
-          }
-        });
+        uploadBtn.onclick = () => {
+          const fileName = `${usn}_photo`;
+          const uploadUrl =
+            "https://script.google.com/a/macros/nitte.edu.in/s/AKfycbx1sdVvmEaR1AXBKakpSp9zVcB2HMHylbadIyg4QN8MavyNoOhxRHEqt1ywUQAVby0FHg/exec?usn=" +
+            encodeURIComponent(fileName);
+          window.open(uploadUrl, "_blank");
+          message.textContent =
+            "📤 Upload page opened in a new tab. Please upload your photo (JPG/PNG).";
+        };
       } catch (error) {
         message.textContent = error.message || "Registration failed.";
         message.className = "message error";
