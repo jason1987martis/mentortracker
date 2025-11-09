@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Registration | Mentor Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="auth-helper.js" defer></script>
 
   <style>
     body {
@@ -45,7 +43,6 @@
       border-radius: 10px;
       transition: background-color 0.3s ease, transform 0.2s ease;
     }
-
     .top-nav a:hover { background-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
     .top-nav .active { background-color: rgba(255,255,255,0.3); color: #2a348d; }
 
@@ -61,13 +58,7 @@
 
     h2 { text-align: center; color: #0d47a1; margin-bottom: 1.5rem; }
 
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-      color: #333;
-    }
-
+    label { display: block; margin-top: 1rem; font-weight: 600; color: #333; }
     input, select {
       width: 100%;
       padding: 0.7rem;
@@ -97,7 +88,6 @@
       font-weight: bold;
       text-align: center;
     }
-
     .success { color: green; }
     .error { color: red; }
 
@@ -106,7 +96,6 @@
       text-align: center;
       margin-top: 1.5rem;
     }
-
     #uploadBtn {
       padding: 0.6rem 1.5rem;
       background: #0d47a1;
@@ -116,23 +105,22 @@
       cursor: pointer;
       font-weight: 600;
     }
-
     #uploadBtn:hover { background: #002171; }
   </style>
 </head>
 
 <body>
   <nav class="top-nav" aria-label="Main navigation">
-    <a href="index.html" data-keep-query>Home</a>
-    <a href="register.html" class="active" data-keep-query>Register</a>
-    <a href="academic.html" data-keep-query>Academic</a>
-    <a href="activities.html" data-keep-query>Activities</a>
-    <a href="meeting.html" data-keep-query>Meetings</a>
-    <a href="viewdash.html" data-keep-query>Dashboard</a>
+    <a href="index.html">Home</a>
+    <a href="register.html" class="active">Register</a>
+    <a href="academic.html">Academic</a>
+    <a href="activities.html">Activities</a>
+    <a href="meeting.html">Meetings</a>
+    <a href="viewdash.html">Dashboard</a>
   </nav>
 
   <div class="container">
-    <img src="logo.jpg" alt="Nitte Logo" class="logo" style="width:90px;display:block;margin:auto;" />
+    <img src="logo.jpg" alt="Nitte Logo" style="width:90px;display:block;margin:auto;" />
     <h2>Student Registration</h2>
 
     <form id="registerForm">
@@ -145,58 +133,10 @@
       <label for="dob">Date of Birth</label>
       <input type="date" id="dob" required />
 
-      <label for="sslc">SSLC Marks (%)</label>
-      <input type="number" id="sslc" min="0" max="100" required />
-
-      <label for="puc">PUC Marks (%)</label>
-      <input type="number" id="puc" min="0" max="100" required />
-
-      <label for="nucat">NUCAT Rank</label>
-      <input type="number" id="nucat" required />
-
-      <label for="student_phone">Student Contact Number</label>
-      <input type="tel" id="student_phone" pattern="[0-9]{10}" required />
-
-      <label for="student_email">Student Email</label>
-      <input type="email" id="student_email" required />
-
-      <label for="stay_type">Place of Stay</label>
-      <select id="stay_type" required>
-        <option value="">Select</option>
-        <option value="Hostel">Hostel</option>
-        <option value="PG">PG</option>
-        <option value="Dayscholar">Dayscholar</option>
-      </select>
-
-      <label for="hobbies">Hobbies</label>
-      <input type="text" id="hobbies" required />
-
-      <label for="father_name">Father's Name</label>
-      <input type="text" id="father_name" required />
-
-      <label for="father_job">Father's Occupation</label>
-      <input type="text" id="father_job" required />
-
-      <label for="mother_name">Mother's Name</label>
-      <input type="text" id="mother_name" required />
-
-      <label for="mother_job">Mother's Occupation</label>
-      <input type="text" id="mother_job" required />
-
-      <label for="res_address">Residential Address</label>
-      <input type="text" id="res_address" required />
-
-      <label for="father_phone">Father's Phone</label>
-      <input type="tel" id="father_phone" pattern="[0-9]{10}" required />
-
-      <label for="mother_phone">Mother's Phone</label>
-      <input type="tel" id="mother_phone" pattern="[0-9]{10}" required />
-
       <button type="submit" id="registerBtn">Register</button>
       <div class="message" id="message"></div>
     </form>
 
-    <!-- Upload Section (now opens popup) -->
     <div id="uploadSection">
       <h3>📸 Upload Student Photo</h3>
       <button id="uploadBtn">Open Upload Page</button>
@@ -204,70 +144,48 @@
   </div>
 
   <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
-    const form = document.getElementById("registerForm");
+    let registeredUSN = "";
     const message = document.getElementById("message");
-    const registerBtn = document.getElementById("registerBtn");
     const uploadSection = document.getElementById("uploadSection");
     const uploadBtn = document.getElementById("uploadBtn");
 
-    async function verifyNotRegistered(usn) {
-      const lookupURL = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`;
-      const response = await fetch(lookupURL);
-      const data = await response.json();
-      return Boolean(data.success);
-    }
-
-    function generateAccessKey(usn) {
-      const prefix = (usn || "XXX").slice(0, 3).toUpperCase();
-      const randomSource = (window.crypto && window.crypto.randomUUID)
-        ? window.crypto.randomUUID().split("-")[0]
-        : Math.random().toString(36).slice(2, 10);
-      return `${prefix}-${randomSource.toUpperCase()}`;
-    }
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      message.textContent = "⏳ Registering student...";
-      message.className = "message";
-      registerBtn.disabled = true;
-
+    document.getElementById("registerForm").addEventListener("submit", (e) => {
+      e.preventDefault();
       const usn = document.getElementById("usn").value.trim();
       if (!usn) {
-        message.textContent = "USN is required.";
-        registerBtn.disabled = false;
+        message.textContent = "⚠️ Please enter your USN.";
+        message.className = "message error";
         return;
       }
 
-      try {
-        const alreadyRegistered = await verifyNotRegistered(usn);
-        if (alreadyRegistered) {
-          message.textContent = "Student already registered.";
-          message.className = "message error";
-          registerBtn.disabled = false;
-          return;
-        }
+      registeredUSN = usn;
+      message.textContent = "✅ Registration successful!";
+      message.className = "message success";
+      uploadSection.style.display = "block";
+    });
 
-        message.textContent = "✅ Registered successfully.";
+    // --- Upload button logic ---
+    uploadBtn.addEventListener("click", () => {
+      if (!registeredUSN) {
+        alert("Missing USN — please register first.");
+        return;
+      }
+
+      const fileName = `${registeredUSN}_photo`;
+      const uploadUrl =
+        "https://script.google.com/a/macros/nitte.edu.in/s/AKfycbx1sdVvmEaR1AXBKakpSp9zVcB2HMHylbadIyg4QN8MavyNoOhxRHEqt1ywUQAVby0FHg/exec?usn=" +
+        encodeURIComponent(fileName);
+
+      window.open(uploadUrl, "_blank", "width=500,height=400");
+      message.textContent = "📤 Upload tab opened — please upload your photo.";
+      message.className = "message";
+    });
+
+    // --- Receive success message from popup ---
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.status === "uploaded") {
+        message.textContent = `✅ Photo uploaded successfully for ${event.data.usn}`;
         message.className = "message success";
-
-        // Show upload button section
-        uploadSection.style.display = "block";
-
-        uploadBtn.onclick = () => {
-          const fileName = `${usn}_photo`;
-          const uploadUrl =
-            "https://script.google.com/a/macros/nitte.edu.in/s/AKfycbx1sdVvmEaR1AXBKakpSp9zVcB2HMHylbadIyg4QN8MavyNoOhxRHEqt1ywUQAVby0FHg/exec?usn=" +
-            encodeURIComponent(fileName);
-          window.open(uploadUrl, "_blank");
-          message.textContent =
-            "📤 Upload page opened in a new tab. Please upload your photo (JPG/PNG).";
-        };
-      } catch (error) {
-        message.textContent = error.message || "Registration failed.";
-        message.className = "message error";
-      } finally {
-        registerBtn.disabled = false;
       }
     });
   </script>
