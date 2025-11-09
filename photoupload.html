@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Upload Proof</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Photo (NMAMIT Verified)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -13,206 +20,140 @@
       padding: 1rem;
     }
     .container {
-      max-width: 750px;
+      max-width: 700px;
       margin: auto;
       background: #fff;
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
-    h2 {
-      text-align: center;
-      color: #0d47a1;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-    }
-    input {
-      width: 100%;
-      padding: 0.6rem;
-      margin-top: 0.3rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    input[type="file"] {
-      padding: 0.3rem;
-    }
+    h2 { text-align: center; color: #0d47a1; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input { width: 100%; padding: 0.6rem; margin-top: 0.3rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
     button {
-      margin-top: 1.5rem;
-      padding: 0.75rem;
-      background-color: #1976d2;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      width: 100%;
+      margin-top: 1.5rem; padding: 0.75rem; width: 100%;
+      background-color: #1976d2; color: white; border: none;
+      border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer;
     }
-    .message {
-      margin-top: 1rem;
-      font-weight: bold;
-      text-align: center;
-    }
-    .success { color: green; }
+    #message { text-align: center; font-weight: bold; margin-top: 1rem; }
     .error { color: red; }
+    .success { color: green; }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h2>Upload Photo (PDF/Image)</h2>
-    <form id="uploadForm">
-      <label for="usn">USN</label>
-      <input type="text" id="usn" required />
+    <h2>Upload Photo (NMAMIT Verified)</h2>
 
-      <label for="accessKey">Access Key</label>
-      <input type="text" id="accessKey" required />
+    <div id="loginSection">
+      <div id="g_id_onload"
+        data-client_id="400955911855-1evjshtu3jsubqj08n75sfsvur11j0f6.apps.googleusercontent.com"
+        data-callback="handleCredentialResponse"
+        data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin" data-type="standard" data-size="large"></div>
+    </div>
 
-      <label for="file">Select File</label>
-      <input type="file" id="fileInput" accept=".pdf,image/*" required />
+    <div id="uploadSection" style="display:none;">
+      <p id="userInfo"></p>
+      <form id="uploadForm">
+        <label for="usn">USN</label>
+        <input type="text" id="usn" required />
 
-      <button type="submit" id="pic">Upload File</button>
-      <div id="message" class="message"></div>
-    </form>
+        <label for="file">Select Photo/PDF</label>
+        <input type="file" id="fileInput" accept=".pdf,image/*" required />
+
+        <button type="submit">Upload</button>
+        <div id="message"></div>
+      </form>
+    </div>
   </div>
-    <script src="config-helper.js"></script>
+
   <script>
-    const config = window.MENTOR_TRACKER_CONFIG || {};
-    const defaultApiUrl = "https://script.google.com/macros/s/AKfycbzRMrKi2BFLuEhIs4NJx3XwDgKwNomCPpWlxH9C64tDcAMskkziUcSHXgWSL3ZgNUvE/exec";
-    const defaultUploadUrl = "https://script.google.com/macros/s/AKfycbzpzN_V5rPDiUyuU8x2aWXjg1UZZZsCcubCqjJrg14johENQOBI2pUGkkO1LZ0nDSXgnw/exec";
-    const apiUrl = config.apiUrl || defaultApiUrl;
-    const uploadUrl = config.uploadUrl || defaultUploadUrl;
-    const buildUrl = typeof config.buildUrl === "function" ? config.buildUrl : (path) => path;
+    // 🔥 Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_CONFIG",
+      authDomain: "YOUR_FIREBASE_CONFIG",
+      projectId: "YOUR_FIREBASE_CONFIG",
+      storageBucket: "YOUR_FIREBASE_CONFIG",
+      messagingSenderId: "YOUR_FIREBASE_CONFIG",
+      appId: "YOUR_FIREBASE_CONFIG"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const storage = firebase.storage();
 
-    const form = document.getElementById("uploadForm");
-    const message = document.getElementById("message");
-    const submitButton = document.getElementById("pic");
+    let userEmail = null;
+    let idToken = null;
 
-    function enableButton() {
-      submitButton.disabled = false;
-    }
-
-    async function verifyAccess(usn, accessKey) {
-      const url = `${apiUrl}?formType=lookup&usn=${encodeURIComponent(usn)}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Lookup failed (${response.status})`);
-      }
-      const payload = await response.json();
-      if (!payload || !payload.success || !payload.data) {
-        return false;
-      }
-      return payload.data[6] === accessKey;
-    }
-
-    function toBase64(arrayBuffer) {
-      let binary = "";
-      const bytes = new Uint8Array(arrayBuffer);
-      const chunkSize = 0x8000;
-      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-        binary += String.fromCharCode.apply(null, bytes.subarray(offset, offset + chunkSize));
-      }
-      return btoa(binary);
-    }
-
-    async function uploadPayload(data) {
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) {
-        throw new Error(`Upload failed (${response.status})`);
-      }
-      const result = await response.json();
-      if (result.status !== "success") {
-        throw new Error(result.message || result.error || "Upload failed.");
-      }
-      return result.fileUrl || result.shareableLink;
-    }
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      message.textContent = "";
-      message.className = "message";
-      submitButton.disabled = true;
-
-      const usn = document.getElementById("usn").value.trim();
-      const accessKey = document.getElementById("accessKey").value.trim();
-      const file = document.getElementById("fileInput").files[0];
-
-      if (!usn || !accessKey || !file) {
-        message.textContent = "All fields are required.";
-        message.className = "message error";
-        enableButton();
+    // 🧠 Google OAuth 2.0 (using GSI)
+    function handleCredentialResponse(response) {
+      const payload = decodeJwtResponse(response.credential);
+      console.log("User:", payload);
+      if (!payload.email.endsWith("@nmamit.in")) {
+        document.getElementById("message").textContent = "Access restricted to NMAMIT.in users only.";
+        document.getElementById("message").className = "error";
         return;
       }
 
-      if (!/^image\/(jpeg|png)$|^application\/pdf$/.test(file.type)) {
-        message.textContent = "Only JPG, PNG, or PDF files are allowed.";
-        message.className = "message error";
-        enableButton();
-        return;
-      }
+      userEmail = payload.email;
+      idToken = response.credential;
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("uploadSection").style.display = "block";
+      document.getElementById("userInfo").textContent = `Signed in as ${userEmail}`;
+    }
 
-      if (file.size > 5 * 1024 * 1024) {
-        message.textContent = "File is too large (max 5 MB).";
-        message.className = "message error";
-        enableButton();
-        return;
-      }
+    function decodeJwtResponse(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join(''));
+      return JSON.parse(jsonPayload);
+    }
 
-      message.innerHTML = '<div class="loader"></div><br>Validating access & uploading...';
+    // 🔑 Authenticate Firebase using Google ID token
+    async function authenticateFirebase() {
+      if (!idToken) throw new Error("No ID token found. Please sign in first.");
+      const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+      await auth.signInWithCredential(credential);
+      console.log("Firebase Authenticated:", auth.currentUser.email);
+    }
+
+    // 📤 Handle Upload
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const message = document.getElementById("message");
+      message.textContent = "Uploading...";
+      message.className = "";
 
       try {
-        const authorised = await verifyAccess(usn, accessKey);
-        if (!authorised) {
-          message.textContent = "Invalid USN or Access Key.";
-          message.className = "message error";
-          enableButton();
-          return;
-        }
+        await authenticateFirebase();
 
-        const arrayBuffer = await file.arrayBuffer();
-        const base64 = toBase64(arrayBuffer);
+        const usn = document.getElementById("usn").value.trim();
+        const file = document.getElementById("fileInput").files[0];
+        const fileRef = storage.ref(`uploads/${userEmail}/${usn}_${file.name}`);
+        await fileRef.put(file);
 
-        let fileUrl = null;
-        try {
-          fileUrl = await uploadPayload({
-            usn,
-            accessKey,
-            filename: file.name,
-            mimeType: file.type || "application/octet-stream",
-            base64
-          });
-        } catch (err) {
-          console.warn("[MentorTracker] Upload request could not confirm completion (likely CORS). Treating as success.", err);
-        }
+        const downloadURL = await fileRef.getDownloadURL();
+        console.log("Uploaded to Firebase:", downloadURL);
 
-        if (fileUrl) {
-          message.innerHTML = `File uploaded successfully.<br><a href="${fileUrl}" target="_blank" rel="noopener noreferrer">View uploaded file</a>`;
-        } else {
-          message.textContent = "File upload initiated. (Server confirmation unavailable, please verify later.)";
-        }
+        // Send metadata to Google Sheet via Apps Script
+        await fetch("YOUR_APPS_SCRIPT_URL", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usn, email: userEmail, fileUrl: downloadURL })
+        });
 
-        message.className = "message success";
-        form.reset();
-
-        setTimeout(() => {
-          window.location.href = buildUrl("index.html");
-        }, 2500);
-      } catch (error) {
-        console.error("[MentorTracker] Upload failed", error);
-        message.textContent = error.message || "Upload failed.";
-        message.className = "message error";
-      } finally {
-        enableButton();
+        message.textContent = "File uploaded successfully!";
+        message.className = "success";
+        document.getElementById("uploadForm").reset();
+      } catch (err) {
+        console.error(err);
+        message.textContent = "Upload failed: " + err.message;
+        message.className = "error";
       }
     });
   </script>
 </body>
 </html>
-
