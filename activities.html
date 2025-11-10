@@ -364,7 +364,7 @@
 
       <div class="button-row">
         <button type="button" class="add-btn" onclick="addActivityRow()">+ Add Activity</button>
-        <div id="message" class="add-btn"></div> <!-- Chnages don here-->
+        <div id="message" class="message"></div> <!-- Chnages don here-->
       </div>
 
       <button type="submit" class="submit-btn">Submit Activities</button>
@@ -432,7 +432,7 @@ const usnField = document.getElementById("usn");
     <input type="number" placeholder="Activity Points (Consult Mentor)" required>
     <select required><option value="">Activity Type</option>${createTypeOptions()}</select>
     <input type="text" placeholder="Proof Link (Google Drive URL)" required>
-    <button type="button" class="delete-btn" onclick="this.parentElement.remove()">Remove</button>
+    <button type="button" class="delete-btn" onclick="this.parentElement.remove()">X</button>
   `;
   container.appendChild(div);
 
