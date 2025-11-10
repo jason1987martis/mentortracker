@@ -364,6 +364,7 @@
 
       <div class="button-row">
         <button type="button" class="add-btn" onclick="addActivityRow()">+ Add Activity</button>
+        <div id="message" class="add-btn"></div> <!-- Chnages don here-->
       </div>
 
       <button type="submit" class="submit-btn">Submit Activities</button>
@@ -380,6 +381,36 @@
     const message = document.getElementById("message");
     const submitBtn = form.querySelector(".submit-btn");
 
+
+const usnField = document.getElementById("usn");
+  const semField = document.getElementById("semester");
+  const messageDiv = document.getElementById("message");
+
+  function updatePrefilledLink() {
+    const usn = usnField.value.trim();
+    const sem = semField.value.trim();
+
+    if (usn && sem) {
+      // Prefilled Google Form base link
+      const baseURL = "https://docs.google.com/forms/d/e/1FAIpQLSc_Rg50-SlUwCgp4IwcMdPDpPmileWUsLSjjPbYvhR0HCtpSQ/viewform?usp=pp_url";
+
+      // Append USN and Semester
+      const prefilledURL = `${baseURL}&entry.5579280=${encodeURIComponent(usn)}&entry.1116397807=${encodeURIComponent(sem)}`;
+
+      // Show the clickable link
+      messageDiv.innerHTML = `
+        <p><strong>Prefilled Google Form:</strong> 
+        <a href="${prefilledURL}" target="_blank">${prefilledURL}</a></p>`;
+    } else {
+      messageDiv.innerHTML = "";
+    }
+  }
+
+  // Trigger when user edits USN or Semester
+  usnField.addEventListener("input", updatePrefilledLink);
+  semField.addEventListener("change", updatePrefilledLink);
+
+   
     const activityTypes = [
       "NSS/NCC/Red Cross", "Sports Participation", "Tech Symposium", "Cultural Event",
       "Paper Presentation", "Internship", "Research Project", "Workshop Attended",
